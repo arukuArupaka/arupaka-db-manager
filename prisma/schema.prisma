@@ -8,156 +8,100 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // 適切なDBプロバイダーに変更してください
+  provider = "mysql" // 使用しているDBの種類に応じて変更
   url      = env("DATABASE_URL")
 }
 
 model Lecture {
-  id           Int      @id @default(autoincrement())
-  ClassCode    Int
-  Name         String
-  Credits      Int
-  Category     String
-  field        String
-  Syllabus     String?  // 任意
-  TimeInfo     TimeInfo @relation(fields: [TimeInfo_id], references: [id])
-  TimeInfo_id  Int
-  Classroom    Classroom @relation(fields: [Classroom_id], references: [id])
-  Classroom_id Int
-  Teachers     Lecture_Teacher[]
-  Feedbacks    Lecture_Feedback[]
+  id          Int       @id @default(autoincrement()) // ID
+  classCode   Int       // 授業コード
+  name        String    // 授業名
+  credits     Int       @default(0)　// 単位数
+  category    String    // 科目区分　（例；教養、 基礎専門、専門）
+  field       String    // 分野　（例：必修、選択必修、 履修指定）
+  syllabus    String?   // シラバス（null許容）
+  teacher     String    // 教員名
+  academics   Academic  // 学部
+  building    String    // 建物
+  classroom   String    // 教室
+  schoolYear  Int       // 年度
+  semester    Boolean   // 学期　（0：春、1：秋）
+  weekday     Weekday   // 曜日
+  period      Int       // 時限
+  feedbacks   Feedback[] // リレーション: Lecture -> Feedback
 }
 
 model Lab {
-  id            Int     @id @default(autoincrement())
-  Name          String
-  Place         String? // 任意
-  Campus        Campus
-  Department    Department @relation(fields: [Department_id], references: [id])
-  Department_id Int
-  Teachers       Teacher_Lab[]
-}
-
-model Teacher_Lab {
-  id       Int @id @default(autoincrement())
-  Teacher  Teacher @relation(fields: [Teacher_id], references: [id])
-  Teacher_id Int
-  Lab      Lab @relation(fields: [Lab_id], references: [id])
-  Lab_id   Int
-}
-
-model Teacher {
-  id      Int @id @default(autoincrement())
-  Name    String
-  Position String?
-  Lectures Lecture_Teacher[]
-  Labs      Teacher_Lab[]
+  id           Int           @id @default(autoincrement()) // ID
+  name         String        // 研究室名
+  place        String?       // 研究所の場所（null許容）
+  campus       Campus        // キャンパス
+  academics    Academic      // 学部
+  department   Int           // 学科
+  teacher      String        // 教員名
+  labFeedbacks LabFeedback[] // リレーション: Lab -> LabFeedback
 }
 
 model Feedback {
-  id            Int @id @default(autoincrement())
-  Comment       String?
-  Attendance    Int
-  Ease          Int
-  Satisfaction  Int
-  Lectures      Lecture_Feedback[]
+  id           Int       @id @default(autoincrement()) // ID
+  comment      String?   // コメント（null許容）
+  attendance   Int       // 出席確認率
+  ease         Int       // 楽単度
+  satisfaction Int       // 充実度
+  lecture      Lecture   @relation(fields: [lectureId], references: [id]) // リレーション: Feedback -> Lecture
+  lectureId    Int       // リレーションで参照する講義ID
 }
 
 model ClassMatching {
-  id Int @id @default(autoincrement())
-}
-
-model Classroom {
-  id          Int @id @default(autoincrement())
-  name        String
-  Building    Building @relation(fields: [Building_id], references: [id])
-  Building_id Int
-  Lectures    Lecture[]
-}
-
-model TimeInfo {
-  id           Int @id @default(autoincrement())
-  SchoolYear   Int
-  Semester     Boolean
-  Weekday      Weekday
-  Period       Int
-  Academic     Academic @relation(fields: [Academic_id], references: [id])
-  Academic_id  Int
-  Lectures     Lecture[]
-}
-
-model Academic {
-  id         Int @id @default(autoincrement())
-  Academics  AcademicEnum
-  Departments Department[]
-  TimeInfos  TimeInfo[]
-}
-
-model Department {
-  id          Int @id @default(autoincrement())
-  Academic    Academic @relation(fields: [Academic_id], references: [id])
-  Academic_id Int
-  Labs        Lab[]
+  id Int @id @default(autoincrement()) // ID
 }
 
 model Notification {
-  id Int @id @default(autoincrement())
+  id      Int    @id @default(autoincrement()) // ID
+  message String // 内容
 }
 
-model Lecture_Teacher {
-  id         Int @id @default(autoincrement())
-  Lecture    Lecture @relation(fields: [Lecture_id], references: [id])
-  Lecture_id Int
-  Teacher    Teacher @relation(fields: [Teacher_id], references: [id])
-  Teacher_id Int
-}
-
-model Lecture_Feedback {
-  id          Int @id @default(autoincrement())
-  Feedback    Feedback @relation(fields: [Feedback_id], references: [id])
-  Feedback_id Int
-  Lecture     Lecture @relation(fields: [Lecture_id], references: [id])
-  Lecture_id  Int
-}
-
-model Building {
-  id      Int @id @default(autoincrement())
-  Name    String
-  Classrooms Classroom[]
+model LabFeedback {
+  id           Int    @id @default(autoincrement()) // ID
+  comment      String? // コメント（null許容）
+  attendance   Int     // 出席確認率
+  ease         Int     // 楽単度
+  satisfaction Int     // 充実度
+  lab          Lab     @relation(fields: [labId], references: [id]) // リレーション: LabFeedback -> Lab
+  labId        Int     // リレーションで参照する研究室ID
 }
 
 enum Campus {
-  KIC
-  BKC
-  OIC
+  KIC  
+  BKC  
+  OIC  
 }
 
 enum Weekday {
-  Monday
-  Tuesday
-  Wednesday
-  Thursday
-  Friday
-  Saturday
-  Sunday
+  Monday   
+  Tuseday   
+  Wednsday  
+  Thursday  
+  Friday    
+  Saturday  
+  Sunday    
 }
 
-enum AcademicEnum {
-  Law
-  SocialSciences
-  InternationalRelations
-  Letters
-  Economics
-  SportandHealthScience
-  ScienceandEngineering
-  LifeSciences
-  PharmaceuticalSciences
-  GastronomyManagement
-  BusinessAdministration
-  PolicyScience
-  ComprehensivePsychology
-  GlobalLiberalArts
-  ImageArtsandSciences
-  InformationScienceandEngineering
+enum Academic {
+  Law                       // 法学部
+  SocialSciences            // 社会学部
+  InternationalRelations    // 国際関係学部
+  Letters                   // 文学部
+  Economics                 // 経済学部
+  SportandHealthScience     // スポーツ健康科学部
+  ScienceandEngineering     // 理工学部
+  LifeSciences              // 生命科学部
+  PharmaceuticalSciences    // 薬学部
+  GastronomyManagement      // 食マネジメント学部
+  BusinessAdministration    // 経営学部
+  PolicyScience             // 政策科学部
+  ComprehensivePsychology   // 総合心理学部
+  GlobalLiberalArts         // グローバル教養学部
+  ImageArtsandSciences      // 映像学部
+  InformationScienceandEngineering // 情報理工学部
 }
-
