@@ -58,7 +58,7 @@ model Lecture {
   teacher     String    // 教員名
   academics   Academic  // 学部
   building    String?    // 建物
-  classroom   String    // 教室
+  classroom   String?    // 教室
   schoolYear  Int       @map("school_year")// 年度
   semester    Boolean   // 学期　（0：春、1：秋）
   weekday     Weekday   // 曜日
