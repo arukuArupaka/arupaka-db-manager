@@ -3,12 +3,110 @@
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "postgresql" // 使用しているDBの種類に応じて変更
   url      = env("DATABASE_URL")
 }
+
+enum Campus {
+  KIC  
+  BKC  
+  OIC  
+}
+
+enum Weekday {
+  Monday   
+  Tuseday   
+  Wednsday  
+  Thursday  
+  Friday    
+  Saturday  
+  Sunday    
+}
+
+enum Academic {
+  Law                       // 法学部
+  SocialSciences            // 社会学部
+  InternationalRelations    // 国際関係学部
+  Letters                   // 文学部
+  Economics                 // 経済学部
+  SportandHealthScience     // スポーツ健康科学部
+  ScienceandEngineering     // 理工学部
+  LifeSciences              // 生命科学部
+  PharmaceuticalSciences    // 薬学部
+  GastronomyManagement      // 食マネジメント学部
+  BusinessAdministration    // 経営学部
+  PolicyScience             // 政策科学部
+  ComprehensivePsychology   // 総合心理学部
+  GlobalLiberalArts         // グローバル教養学部
+  ImageArtsandSciences      // 映像学部
+  InformationScienceandEngineering // 情報理工学部
+}
+
+model Lecture {
+  id          Int       @id @default(autoincrement()) // ID
+  classCode   Int       @map("class_code")// 授業コード
+  name        String    // 授業名
+  credits     Int       @default(0) // 単位数
+  category    String?    // 科目区分　（例；教養、 基礎専門、専門）
+  field       String?    // 分野　（例：必修、選択必修、 履修指定）
+  syllabus    String?   // シラバス（null許容）
+  teacher     String    // 教員名
+  academics   Academic  // 学部
+  building    String?    // 建物
+  classroom   String?    // 教室
+  schoolYear  Int       @map("school_year")// 年度
+  semester    Boolean   // 学期　（0：春、1：秋）
+  weekday     Weekday   // 曜日
+  period      Int       // 時限
+  feedbacks   Feedback[] // リレーション: Lecture -> Feedback
+}
+
+// 先生一人に対して複数の研究室が結びつくパターンでも、ここでは先生一人に対して一つの研究室として扱うから、同じ研究室が入る可能性がある
+model Lab {
+  id           Int           @id @default(autoincrement()) // ID
+  name         String        // 研究室名
+  place        String?       // 研究所の場所（null許容）
+  campus       Campus        // キャンパス
+  academics    Academic      // 学部
+  department   Int           // 学科
+  teacher      String        // 教員名
+  labFeedbacks LabFeedback[] // リレーション: Lab -> LabFeedback
+}
+
+model Feedback {
+  id           Int       @id @default(autoincrement()) // ID
+  comment      String?   // コメント（null許容）
+  attendance   Int       // 出席確認率
+  ease         Int       // 楽単度
+  satisfaction Int       // 充実度
+  lecture      Lecture   @relation(fields: [lectureId], references: [id]) // リレーション: Feedback -> Lecture
+  lectureId    Int        @map("lecture_id")// リレーションで参照する講義ID
+}
+
+model ClassMatching {
+  id Int @id @default(autoincrement()) // ID
+}
+
+model Notification {
+  id      Int    @id @default(autoincrement()) // ID
+  message String // 内容
+  imageUrl String @map("image_url")
+  sourceUrl String @map("source_url")
+  stackScreen String? @map("stack_screen")
+}
+
+model LabFeedback {
+  id           Int    @id @default(autoincrement()) // ID
+  comment      String? // コメント（null許容）
+  attendance   Int     // 出席確認率
+  ease         Int     // 楽単度
+  satisfaction Int     // 充実度
+  lab          Lab     @relation(fields: [labId], references: [id]) // リレーション: LabFeedback -> Lab
+  labId        Int     @map("lab_id")// リレーションで参照する研究室ID
+}
+
