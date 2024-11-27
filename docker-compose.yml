@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: my_database
+
+  nestjs:
+    build:
+      context: .
+    container_name: nestjs
+    ports:
+      - '3001:3000'
+    depends_on:
+      - postgres
+    env_file:
+      - .env # 環境変数ファイルを指定
+    command: npm run start:dev
+
+volumes:
+  postgres_data:
