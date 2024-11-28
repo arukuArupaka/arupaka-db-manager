@@ -64,6 +64,8 @@ model Lecture {
   weekday     Weekday   // 曜日
   period      Int       // 時限
   feedbacks   Feedback[] // リレーション: Lecture -> Feedback
+
+  @@unique([schoolYear, semester, weekday, period, academics])
 }
 
 // 先生一人に対して複数の研究室が結びつくパターンでも、ここでは先生一人に対して一つの研究室として扱うから、同じ研究室が入る可能性がある
@@ -74,7 +76,7 @@ model Lab {
   campus       Campus        // キャンパス
   academics    Academic      // 学部
   department   Int           // 学科
-  teacher      String        // 教員名
+  teacher      String        // 教授名
   labFeedbacks LabFeedback[] // リレーション: Lab -> LabFeedback
 
     @@unique([name, teacher])  // 複合キー
