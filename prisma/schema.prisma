@@ -76,6 +76,8 @@ model Lab {
   department   Int           // 学科
   teacher      String        // 教員名
   labFeedbacks LabFeedback[] // リレーション: Lab -> LabFeedback
+
+    @@unique([name, teacher])  // 複合キー
 }
 
 model Feedback {
@@ -108,5 +110,18 @@ model LabFeedback {
   satisfaction Int     // 充実度
   lab          Lab     @relation(fields: [labId], references: [id]) // リレーション: LabFeedback -> Lab
   labId        Int     @map("lab_id")// リレーションで参照する研究室ID
+
+  @@map("lab_feedback") 
 }
 
+model Building {
+	campus       Campus // enumのやつ
+	name         String // 建物名
+	classRoom    String[]  // 空き教室名
+  schoolYear   Int       @map("school_year")// 年度
+	semester     Boolean
+	weekOfDay    String    @map("week_of_day")
+	period       Int
+
+  @@unique([name,schoolYear,semester,weekOfDay,period])  // 複合キー
+}
