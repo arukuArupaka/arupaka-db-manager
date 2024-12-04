@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_USER: arupaka
       POSTGRES_PASSWORD: arupaka
-      POSTGRES_DB: arupaka
+      POSTGRES_DB: arupaka_db_manager
 
   nestjs:
     build:
