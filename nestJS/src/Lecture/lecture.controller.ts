@@ -11,6 +11,7 @@ export class LectureController {
   // 実験用のエンドポイント
   @Get('getLecture')
   async getLecture() {
+    console.log('hello, world');
     return await this.prisma.lecture.findMany();
   }
 }
