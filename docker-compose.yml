@@ -26,16 +26,3 @@ services:
       - /usr/src/app/node_modules
     command: sh -c "npx prisma generate && npx prisma migrate dev && npm run dev"
     restart: always
-
-  selenium-python:
-    build:
-      context: ./selenium-python
-    container_name: selenium-python
-    depends_on:
-      - postgres
-    volumes:
-      - ./selenium-python:/app
-    environment:
-      PYTHONUNBUFFERED: 1
-    command: tail -f /dev/null
-    restart: always
