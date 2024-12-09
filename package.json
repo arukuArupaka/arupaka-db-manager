@@ -16,6 +16,7 @@
     "docker:up": "docker compose up -d",
     "docker:build": "docker compose up -d --build",
     "docker:command": "docker exec -it nestjs sh",
+    "migrate": "prisma migrate deploy",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
