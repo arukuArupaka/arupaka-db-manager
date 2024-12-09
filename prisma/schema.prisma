@@ -65,6 +65,7 @@ model Lecture {
   period       Int       // 時限
   feedbacks    Feedback[] // リレーション: Lecture -> Feedback
 
+  @@unique([classCode, academic, name])
   @@index([schoolYear, semester, weekday, period, academic])
   @@index ([name, teacher])  // 複合キー
 }

@@ -4,6 +4,7 @@
   - You are about to drop the column `academics` on the `Lab` table. All the data in the column will be lost.
   - You are about to drop the column `academics` on the `Lecture` table. All the data in the column will be lost.
   - You are about to drop the `LabFeedback` table. If the table is not empty, all the data it contains will be lost.
+  - A unique constraint covering the columns `[class_code,academic,name]` on the table `Lecture` will be added. If there are existing duplicate values, this will fail.
   - Added the required column `academic` to the `Lab` table without a default value. This is not possible if the table is not empty.
   - Added the required column `academic` to the `Lecture` table without a default value. This is not possible if the table is not empty.
 
@@ -62,6 +63,9 @@ CREATE INDEX "Lecture_school_year_semester_weekday_period_academic_idx" ON "Lect
 
 -- CreateIndex
 CREATE INDEX "Lecture_name_teacher_idx" ON "Lecture"("name", "teacher");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Lecture_class_code_academic_name_key" ON "Lecture"("class_code", "academic", "name");
 
 -- AddForeignKey
 ALTER TABLE "lab_feedback" ADD CONSTRAINT "lab_feedback_lab_id_fkey" FOREIGN KEY ("lab_id") REFERENCES "Lab"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
