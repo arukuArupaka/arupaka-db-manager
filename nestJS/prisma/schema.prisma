@@ -81,7 +81,7 @@ model Lab {
   teacher      String        // 教授名
   labFeedbacks LabFeedback[] // リレーション: Lab -> LabFeedback
 
-  @@index([academic,department,teacher])
+  @@index([academic,department])
 }
 
 model Feedback {
