@@ -1,4 +1,4 @@
-### arupaka-db-manager
+# arupaka-db-manager
 走るアルパカの統合バックエンドシステムである。
 ## 具体的に扱うサービス
 * アルパカアプリの時間割情報
