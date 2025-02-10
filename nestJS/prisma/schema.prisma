@@ -47,6 +47,15 @@ enum Academics {
   InformationScienceandEngineering // 情報理工学部
 }
 
+enum Condition {
+  BRAND_NEW //新品、未使用
+  LIKE_NEW  //未使用に近い
+  GOOD  //目立った傷や汚れなし
+  FAIR //やや傷や汚れあり
+  POOR  //傷や汚れあり
+  BAD //全体的に状態が悪い
+}
+
 model Lecture {
   id           Int        @id @default(autoincrement()) // ID
   classCode    Int        @map("class_code")// 授業コード
@@ -129,4 +138,17 @@ model Building {
 	weekDay      String    @map("week_day")
 	period       Int
 
+}
+
+model ListingItem{
+  id               Int        @id @default(autoincrement()) // ID
+  purchasedAt      DateTime?  @map("purchased_at") //購入した日時
+  purchasedUserId  String?    @map("purchased_user_id") //購入したユーザーのid
+  condition        Condition //商品の状態
+  createdAt        DateTime   @map("created_at") //出品された日時
+  department       Academics    //学部
+  description      String    //商品の説明
+  imageUrl         String     @map("image_url") //商品の画像のURL
+  price            String    //商品の価格
+  name             String    //商品名
 }
