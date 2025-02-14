@@ -4,6 +4,7 @@ import { PrismaServiceProvider } from './prisma/prisma.provider';
 import { LectureModule } from './Lecture/lecture.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
+import { SearchItemModule } from './listing-item/listing-item.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { PrismaModule } from './prisma/prisma.module';
     }),
     PrismaModule,
     LectureModule,
+    SearchItemModule,
   ],
   providers: [AppService, PrismaServiceProvider],
   exports: [PrismaServiceProvider],
