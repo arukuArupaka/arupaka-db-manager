@@ -1,5 +1,4 @@
 export interface ListingItemPayload {
-  //intとかdatetimeの型がなかった？？？？？？？？
   id: number; // ID
   documentId: string; //FirebaseにおけるID
   purchasedAt?: Date; //購入した日時
