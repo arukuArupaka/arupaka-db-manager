@@ -6,15 +6,23 @@ import { CustomPrismaService } from 'src/prisma/prisma.service';
 export class SearchItemService {
   constructor(private readonly prisma: CustomPrismaService) {}
 
-  //検索する商品名を受け取り、データベースから探し出し、そのidを返すメソッド
-  async findItems(searchName: string): Promise<ListingItemPayload[]> {
-    const items = await this.prisma.listingItem.findMany();
-    const filteredItems = items.filter(
-      (item) => item.name.indexOf(searchName) !== -1,
-    );
-    return filteredItems;
+  async findItems(searchWord: string): Promise<ListingItemPayload[]> {
+    const items = await this.prisma.listingItem.findMany({
+      where: {
+        name: { contains: searchWord },
+      },
+    });
+    return items;
   }
 
-  //商品情報を受け取り、データベースに追加するメソッド
-  createItems() {}
+  async ItemCreate(createItem: ListingItemPayload): Promise<string> {
+    await this.prisma.listingItem.upsert({
+      where: {
+        id: createItem.id,
+      },
+      update: createItem,
+      create: createItem,
+    });
+    return 'OK';
+  }
 }

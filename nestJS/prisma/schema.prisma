@@ -152,4 +152,6 @@ model ListingItem{
   imageUrl         String     @map("image_url") //商品の画像のURL
   price            Int         //商品の価格
   name             String      //商品名
+  
+  @@map("listing_item")
 }
