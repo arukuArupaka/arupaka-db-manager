@@ -7,7 +7,7 @@ import { CustomPrismaService } from 'src/prisma/prisma.service';
 export class SearchItemController {
   constructor(private searchItemService: SearchItemService) {}
 
-  @Get('search_item/:name')
+  @Get('search_item')
   async getItems(@Query('name') name: string): Promise<ListingItemPayload[]> {
     return this.searchItemService.findItems(name);
   }
