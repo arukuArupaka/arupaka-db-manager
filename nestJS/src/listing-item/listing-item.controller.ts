@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { SearchItemService } from './listing-item.service';
 import { ListingItemPayload } from './interface/listing-item.payload';
 import { CustomPrismaService } from 'src/prisma/prisma.service';
@@ -8,7 +8,7 @@ export class SearchItemController {
   constructor(private searchItemService: SearchItemService) {}
 
   @Get('search_item/:name')
-  async getItems(@Param('name') name: string): Promise<ListingItemPayload[]> {
+  async getItems(@Query('name') name: string): Promise<ListingItemPayload[]> {
     return this.searchItemService.findItems(name);
   }
 
