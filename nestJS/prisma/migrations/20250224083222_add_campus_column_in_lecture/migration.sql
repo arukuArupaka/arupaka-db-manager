@@ -4,6 +4,9 @@
   - You are about to drop the `ListingItem` table. If the table is not empty, all the data it contains will be lost.
 
 */
+-- AlterTable
+ALTER TABLE "Lecture" ADD COLUMN     "campus" "Campus";
+
 -- DropTable
 DROP TABLE "ListingItem";
 
@@ -23,3 +26,6 @@ CREATE TABLE "listing_item" (
 
     CONSTRAINT "listing_item_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE INDEX "Lecture_school_year_semester_weekday_period_campus_idx" ON "Lecture"("school_year", "semester", "weekday", "period", "campus");
