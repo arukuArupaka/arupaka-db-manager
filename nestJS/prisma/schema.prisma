@@ -68,7 +68,7 @@ model Lecture {
   syllabus     String?   // シラバス（null許容）
   teacher      String    // 教員名
   academic     Academics  // 学部
-  buildingId   Int?    // 建物
+  building     String?    //建物名
   classroom    String?    // 教室
   schoolYear   Int        @map("school_year")// 年度
   semester     Boolean   // 学期　（0：春、1：秋）
@@ -76,11 +76,9 @@ model Lecture {
   period       Int       // 時限
   feedbacks    Feedback[] // リレーション: Lecture -> Feedback
 
-  building Building? @relation(fields: [buildingId], references: [id]) // リレーション: Lecture -> Building
-
   @@unique([classCode, academic, name])
   @@index([schoolYear, semester, weekday, period, academic])
-  @@index([schoolYear, semester, buildingId])
+  @@index([schoolYear,semester,weekday,period,building])
   @@index ([name, teacher])  // 複合キー
 }
 
@@ -143,7 +141,6 @@ model Building {
 	weekDay      String    @map("week_day")
 	period       Int
 
-  lectures    Lecture[]
 
 }
 
