@@ -19,12 +19,15 @@ export class LectureController {
   ) {}
 
   // 実験用のエンドポイント
-  @Get('getLecture')
+  @Get('get_lecture')
   async getLecture() {
     return await this.prisma.lecture.findMany();
   }
 
-  @Get('getUnavailableClassrooms')
+  @Get('get_unavailable_classrooms')
+  /*エンドポイントを叩く際、正しい形式で入力するように注意してください
+    以下の引数の型注釈を参考にしてください。(特にCampusやWeekdayなどは)
+     */
   async getUnavailableClassRooms(
     @Query('campus') campus: Campus,
     @Query('year') year: number,
