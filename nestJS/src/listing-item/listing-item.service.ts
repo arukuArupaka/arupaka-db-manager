@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ListingItemPayload } from './interface/listing-item.payload';
+import {
+  ListingItemPayload,
+  RecievedListingItemPayload,
+} from './interface/listing-item.payload';
 import { CustomPrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -15,11 +18,9 @@ export class SearchItemService {
     return items;
   }
 
-  async ItemCreate(createItem: ListingItemPayload): Promise<string> {
+  async ItemCreate(createItem: RecievedListingItemPayload): Promise<string> {
     await this.prisma.listingItem.upsert({
-      where: {
-        id: createItem.id,
-      },
+      where: { documentId: createItem.documentId },
       update: createItem,
       create: createItem,
     });

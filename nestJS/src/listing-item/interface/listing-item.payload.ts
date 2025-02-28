@@ -1,17 +1,20 @@
-export interface ListingItemPayload {
-  id: number; // ID
+export interface RecievedListingItemPayload {
   documentId: string; //FirebaseにおけるID
   purchasedAt?: Date; //購入した日時
   purchasedUserId?: string; //購入したユーザーのid
   condition: Condition; //商品の状態
-  createdAt: Date; //出品された日時
   department: Academics; //学部
   description?: string; //商品の説明
   imageUrl: string; //商品の画像のURL
   price: number; //商品の価格
   name: string; //商品
+  firebaseUserId: string; //ユーザーID
 }
 
+export interface ListingItemPayload extends RecievedListingItemPayload {
+  id: Number; //ID
+  createdAt: Date; //出品された日時
+}
 export type Condition =
   | 'BRAND_NEW' //新品、未使用
   | 'LIKE_NEW' //未使用に近い

@@ -142,16 +142,17 @@ model Building {
 
 model ListingItem{
   id               Int        @id @default(autoincrement()) // ID
-  documentId       String     @map("document_id") //FirebaseにおけるID
+  documentId       String     @unique @map("document_id") //FirebaseにおけるID
   purchasedAt      DateTime?  @map("purchased_at") //購入した日時
   purchasedUserId  String?    @map("purchased_user_id") //購入したユーザーのid
   condition        Condition   //商品の状態
-  createdAt        DateTime   @map("created_at") //出品された日時
+  createdAt        DateTime   @default(now()) @map("created_at") //出品された日時
   department       Academics   //学部
   description      String?     //商品の説明
   imageUrl         String     @map("image_url") //商品の画像のURL
   price            Int         //商品の価格
   name             String      //商品名
+  firebaseUserId   String     @map("firebase_user_id") //ユーザーID
   
   @@map("listing_item")
 }
