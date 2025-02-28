@@ -5,7 +5,7 @@ export interface RecievedListingItemPayload {
   condition: Condition; //商品の状態
   department: Academics; //学部
   description?: string; //商品の説明
-  imageUrl: string; //商品の画像のURL
+  imageUrl: string[]; //商品の画像のURL
   price: number; //商品の価格
   name: string; //商品
   firebaseUserId: string; //ユーザーID
