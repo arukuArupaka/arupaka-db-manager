@@ -4,21 +4,21 @@ import {
   ListingItemPayload,
   RecievedListingItemPayload,
 } from './interface/listing-item.payload';
-import { CustomPrismaService } from 'src/prisma/prisma.service';
+import { ValidationError } from 'class-validator';
 
 @Controller('listing_item')
 export class SearchItemController {
   constructor(private searchItemService: SearchItemService) {}
 
   @Get('search_item')
-  async getItems(@Query('name') name: string) {
+  async getItems(@Query('name') name: string):Promise<ListingItemPayload[]> {
     return this.searchItemService.findItems(name);
   }
 
   @Post('create_item')
   async CreateItem(
     @Body() createItem: RecievedListingItemPayload,
-  ): Promise<string> {
+  ): Promise<string|ValidationError[]> {
     return this.searchItemService.ItemCreate(createItem);
   }
 }
