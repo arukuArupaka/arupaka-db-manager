@@ -46,12 +46,24 @@ export class SearchItemService {
       price: createItem.price,
       name: createItem.name,
       firebaseUserId: createItem.firebaseUserId,
-    }  
+      imageUrls:{
+      create:createItem.imageUrls.map((imageUrl)=>({url:imageUrl}))
+      } 
+    }
     await this.prisma.listingItem.upsert({
       where: { documentId: createItem.documentId },
       update: adjustedCreateItem,
-      create: adjustedCreateItem,
+      create: {
+        documentId: createItem.documentId,
+        condition: createItem.condition,
+        department: createItem.department,
+        price: createItem.price,
+        name: createItem.name,
+        firebaseUserId: createItem.firebaseUserId,
+        imageUrls:{
+          create:createItem.imageUrls.map((imageUrl)=>({url:imageUrl}))
+        }
+      },
     });
     return 'OK';
-  }
-}
+}}

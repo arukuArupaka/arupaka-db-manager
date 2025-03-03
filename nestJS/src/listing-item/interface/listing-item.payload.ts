@@ -1,9 +1,11 @@
 import {
+  ArrayNotEmpty,
+  ArrayUnique,
+  IsArray,
   IsDate,
   IsFQDN,
-  IsIn,
   IsInt,
-  IsNumber,
+  IsOptional,
   IsString,
   Min,
 } from 'class-validator';
@@ -11,16 +13,21 @@ import {
 export class RecievedListingItemPayload {
   @IsString()
   documentId: string; //FirebaseにおけるID
+  @IsOptional()
   @IsDate()
   purchasedAt?: Date; //購入した日時
+  @IsOptional()
   @IsString()
   purchasedUserId?: string; //購入したユーザーのid
   condition: Condition; //商品の状態
   department: Academics; //学部
+  @IsOptional()
   @IsString()
   description?: string; //商品の説明
-  @IsString()
-  @IsFQDN()
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayUnique()
+  @IsString({each:true})
   imageUrls:string[];
   @IsInt()
   @Min(0)
