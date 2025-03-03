@@ -11,7 +11,7 @@ export class SearchItemController {
   constructor(private searchItemService: SearchItemService) {}
 
   @Get('search_item')
-  async getItems(@Query('name') name: string): Promise<ListingItemPayload[]> {
+  async getItems(@Query('name') name: string) {
     return this.searchItemService.findItems(name);
   }
 
