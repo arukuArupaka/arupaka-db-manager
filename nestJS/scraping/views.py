@@ -1,3 +1,7 @@
+import os
+from django.http import HttpResponse
+from django.core.serializers import serialize
+from .models import Kamoku
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -10,6 +14,27 @@ from .web_auto import web_search  # スクレイピングコードをscraper.py�
 class KamokuViewSet(viewsets.ModelViewSet):
     queryset = Kamoku.objects.all()
     serializer_class = MyModelSerializer
+
+def dump_chunked_view(request):
+    chunk_size = 10000  # チャンクサイズを調整
+    qs = Kamoku.objects.all().order_by('pk')
+    total = qs.count()
+    messages = [f"Total records: {total}"]
+
+    # 出力ディレクトリのパスをプロジェクトのルート相対に指定（必要に応じて調整）
+    output_dir = os.path.join(os.getcwd(), "dumped_data")
+    os.makedirs(output_dir, exist_ok=True)
+
+    for i in range(0, total, chunk_size):
+        chunk = qs[i:i+chunk_size]
+        data = serialize('json', chunk, indent=2)
+        filename = os.path.join(output_dir, f"mymodel{i//chunk_size + 1}.json")
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(data)
+        messages.append(f"Dumped records {i} to {i+chunk_size} into {filename}")
+
+    response_text = "\n".join(messages)
+    return HttpResponse(response_text, content_type="text/plain")
 
 @api_view(['GET'])
 def scrape_and_store(request):

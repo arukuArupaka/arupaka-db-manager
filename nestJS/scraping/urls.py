@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from .views import dump_chunked_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('dump-chunked/', dump_chunked_view, name='dump_chunked'),
 ]

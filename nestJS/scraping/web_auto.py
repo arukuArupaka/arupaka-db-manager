@@ -17,8 +17,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from lxml import html
-from department_adjust import department_adjust
-from day_translation import day_translation
+from .department_adjust import department_adjust 
+from .day_translation import day_translation
 from asgiref.sync import sync_to_async
 
 async def save_kamoku_data(data, semester):
