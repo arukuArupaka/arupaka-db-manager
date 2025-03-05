@@ -75,7 +75,6 @@ model Lecture {
   feedbacks    Feedback[] // リレーション: Lecture -> Feedback
   campus       Campus?    //キャンパス
 
-  @@unique([classCode, academic, name])
   @@index([schoolYear, semester, weekday, period, academic])
   @@index([schoolYear,semester,weekday,period,campus])
   @@index ([name, teacher])  // 複合キー
