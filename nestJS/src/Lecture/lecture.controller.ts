@@ -29,7 +29,7 @@ export class LectureController {
         teacher: el.fields.teacher,
         academic: el.fields.academic,
         classroom: el.fields.classroom,
-        semester: el.fields.semester,
+        semester: Boolean(el.fields.semester),
         weekday: el.fields.weekday,
         period: el.fields.period,
       }));
