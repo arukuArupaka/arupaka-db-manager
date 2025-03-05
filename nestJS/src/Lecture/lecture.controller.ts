@@ -22,7 +22,7 @@ export class LectureController {
       const data = JSON.parse(jsonData);
       const newlectures = data.map((el) => ({
         schoolYear: el.fields.schoolYear,
-        classCode: el.fields.class_code,
+        classCode: el.fields.classCode,
         name: el.fields.name,
         credits: el.fields.credits,
         syllabus: el.fields.syllabus,
