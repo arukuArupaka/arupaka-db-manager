@@ -1,6 +1,6 @@
 def department_adjust (dep):
     if dep == 2:
-        ad_dep = "Law"                                            
+        ad_dep = "Law"
     elif dep == 3:
         ad_dep = "Economics"
     elif dep == 4:
