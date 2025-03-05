@@ -17,7 +17,7 @@ export class LectureController {
   @Get('loadLecture')
   async loadLecture() {
     for (let i = 1; i < 4; i++) {
-      const filePath = path.join(__dirname, `mymodell${i}.json`);
+      const filePath = path.join(__dirname, `mymodel${i}.json`);
       const jsonData = fs.readFileSync(filePath, 'utf-8');
       const data = JSON.parse(jsonData);
       const newlectures = data.map((el) => ({
