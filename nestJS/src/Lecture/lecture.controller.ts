@@ -16,29 +16,28 @@ export class LectureController {
 
   @Get('loadLecture')
   async loadLecture() {
-    const filePath = path.join(__dirname, 'deta.json');
-    const jsonData = fs.readFileSync(filePath, 'utf-8');
-  const data = JSON.parse(jsonData);
-  const newlectures = data.map(el => (
-    {
-      schoolYear:    el.fields.schoolYear,
-      classCode:    el.fields.class_code,
-      name: el.fields.name,         
-      credits: el.fields.credits,       
-      syllabus: el.fields.syllabus,     
-      teacher: el.fields.teacher,      
-      academic: el.fields.academic,     
-      classroom: el.fields.classroom,    
-      semester: el.fields.semester,     
-      weekday: el.fields.weekday,      
-      period: el.fields.period,
-    }
-  ))
+    for (let i = 1; i < 4; i++) {
+      const filePath = path.join(__dirname, `mymodell${i}.json`);
+      const jsonData = fs.readFileSync(filePath, 'utf-8');
+      const data = JSON.parse(jsonData);
+      const newlectures = data.map((el) => ({
+        schoolYear: el.fields.schoolYear,
+        classCode: el.fields.class_code,
+        name: el.fields.name,
+        credits: el.fields.credits,
+        syllabus: el.fields.syllabus,
+        teacher: el.fields.teacher,
+        academic: el.fields.academic,
+        classroom: el.fields.classroom,
+        semester: el.fields.semester,
+        weekday: el.fields.weekday,
+        period: el.fields.period,
+      }));
 
-  
-    await this.prisma.lecture.createMany({
-      data: newlectures
-    });
-    return "OK"
+      await this.prisma.lecture.createMany({
+        data: newlectures,
+      });
+    }
+    return 'OK';
   }
 }
