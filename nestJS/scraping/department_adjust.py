@@ -1,18 +1,18 @@
 def department_adjust (dep):
     if dep == 2:
-        ad_dep = "Law"
+        ad_dep = "Law"                                            
     elif dep == 3:
         ad_dep = "Economics"
     elif dep == 4:
         ad_dep = "BusinessAdministration"
     elif dep == 5:
-        ad_dep = "SocialSciences "
+        ad_dep = "SocialSciences"
     elif dep == 6:
-        ad_dep = "InternationalRelations "
+        ad_dep = "InternationalRelations"
     elif dep == 7:
         ad_dep = "PolicyScience"
     elif dep == 8:
-        ad_dep = "Letters "
+        ad_dep = "Letters"
     elif dep == 9:
         ad_dep = "ImageArtsandSciences"
     elif dep == 10:
