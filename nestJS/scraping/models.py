@@ -12,6 +12,7 @@ class Kamoku(models.Model):
     weekday = models.CharField(max_length=400)
     period = models.IntegerField()
     academic  = models.CharField(max_length=400)
+    campus = models.CharField(max_length=400, null=True)
     credits = models.IntegerField()
     semester = models.BooleanField(default=False)
     def __str__(self):

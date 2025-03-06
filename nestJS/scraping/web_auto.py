@@ -17,8 +17,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from lxml import html
-from .department_adjust import department_adjust 
-from .day_translation import day_translation
+from scraping.department_adjust import department_adjust 
+from scraping.day_translation import day_translation
+from scraping.campus_translation import campus_translation
 from asgiref.sync import sync_to_async
 
 async def save_kamoku_data(data, semester):
@@ -63,10 +64,30 @@ async def save_kamoku_data(data, semester):
             weekday=day,
             period=period,
             classroom=data["classroom"],
-            schoolYear=data["schoolYear"]
+            schoolYear=data["schoolYear"],
+            campus=data["campus"]
         )
 
 async def get_classroom_info(syllabus):
+    # 非同期でHTMLコンテンツを取得
+    async with aiohttp.ClientSession() as session:
+        async with session.get(syllabus) as response:
+            html_content = await response.text()
+
+    # HTMLを解析
+    tree = html.fromstring(html_content)
+
+    # 教室情報を取得するためのXPathを追加
+    classroom_xpath = '//*[@id="table-syllabusitems"]/div/div[2]' 
+    classroom_element = tree.xpath(classroom_xpath)
+
+    if classroom_element:
+        classroom = classroom_element[0].text_content().strip()  # .text_content()を使用してテキストを取得
+        return classroom
+    else:
+        return "教室情報が見つかりませんでした。"
+    
+async def get_campus_info(syllabus):
     # 非同期でHTMLコンテンツを取得
     async with aiohttp.ClientSession() as session:
         async with session.get(syllabus) as response:
@@ -191,17 +212,21 @@ async def web_search():
 
                             xpath_kamoku = f"/html/body/div[1]/div[2]/div/div/form/table/tbody/tr[{j}]/td[2]/a"
                             xpath_teacher = f"/html/body/div[1]/div[2]/div/div/form/table/tbody/tr[{j}]/td[6]"
-                            xpath_credits = f"/html/body/div[1]/div[2]/div/div/form/table/tbody/tr[{j}]/td[8]"
-                            xpath_daytime = f"/html/body/div[1]/div[2]/div/div/form/table/tbody/tr[{j}]/td[4]"
+                            xpath_credits = f"/html/body/div[1]/div[2]/div/div/form/table/tbody/tr[{j}]/td[8]"  
+                            xpath_daytime = f"/html/body/div[1]/div[2]/div/div/form/table/tbody/tr[{j}]/td[4]" 
                             xpath_schoolYear = f"/html/body/div[1]/div[2]/div/div/form/div[1]/div[5]/table/tbody/tr[2]/td/select[1]/option[1]"
+                            xpath_campus = f"/html/body/div[1]/div[2]/div/div/form/table/tbody/tr[{j}]/td[5]"
 
                             element_kamoku = tree.xpath(xpath_kamoku)
                             element_teacher = tree.xpath(xpath_teacher)
                             element_credits = tree.xpath(xpath_credits)
                             element_daytime = tree.xpath(xpath_daytime)
                             element_schoolYear = tree.xpath(xpath_schoolYear)
+                            element_campus = tree.xpath(xpath_campus)
 
                             if element_kamoku:
+                                campus_raw = element_campus[0].text_content() if element_campus else "不明"
+                                campus_name = campus_translation.get(campus_raw, "不明")
                                 data = {
                                     "academic": department_adjust(d),
                                     "classCode": element_kamoku[0].text_content().split(':', 1)[0], 
@@ -213,6 +238,7 @@ async def web_search():
                                     "period": element_daytime[0].text_content()[1:] if element_daytime else "不明",
                                     "classroom": await get_classroom_info("https://ct.ritsumei.ac.jp" + element_kamoku[0].get('href')),
                                     "schoolYear": element_schoolYear[0].text_content(),
+                                    "campus": campus_name,
                                 }
                                 await save_kamoku_data(data, semester) 
 
@@ -222,14 +248,12 @@ async def web_search():
                             )
 
                             if "disabled" in next_button.get_attribute("class"):
-                                print("「次へ」ボタンが無効。次の曜日へ進みます。")
                                 break  # 次の曜日のループへ進む
                             else:
                                 next_button.click()
                                 time.sleep(2)  # ページ読み込み待機
 
                         except TimeoutException:
-                            print("「次へ」ボタンが見つからず、次の曜日へ進みます。")
                             break  # 次の曜日へ進む
 
     driver.quit()

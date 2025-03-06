@@ -3,6 +3,7 @@ import { Controller, Get } from '@nestjs/common';
 import { CustomPrismaService } from '../prisma/prisma.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Campus } from '@prisma/client';
 
 @Controller('lecture')
 export class LectureController {
@@ -32,6 +33,7 @@ export class LectureController {
         semester: Boolean(el.fields.semester),
         weekday: el.fields.weekday,
         period: el.fields.period,
+        campus: el.fields.campus,
       }));
 
       await this.prisma.lecture.createMany({
