@@ -20,8 +20,8 @@ enum Campus {
 
 enum Weekday {
   Monday   
-  Tuseday   
-  Wednsday  
+  Tuesday   
+  Wednesday  
   Thursday  
   Friday    
   Saturday  
