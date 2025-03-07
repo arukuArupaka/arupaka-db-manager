@@ -12,7 +12,7 @@ export interface RecievedListingItemPayload {
 }
 
 export interface ListingItemPayload extends RecievedListingItemPayload {
-  id: Number; //ID
+  id: number; //ID
   createdAt: Date; //出品された日時
 }
 export type Condition =
