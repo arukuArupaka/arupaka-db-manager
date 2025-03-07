@@ -72,7 +72,6 @@ model Lecture {
   period       Int       // 時限
   feedbacks    Feedback[] // リレーション: Lecture -> Feedback
   campus       Campus?    //キャンパス
-  classroom    String?   // 教室名（null許容）
   lectureClassRooms LectureClassRoom[] // リレーション: Lecture -> LectureClassRoom
 
   @@index([schoolYear, semester, weekday, period, academic])

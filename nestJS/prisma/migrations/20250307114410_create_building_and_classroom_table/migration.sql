@@ -7,6 +7,7 @@
   - You are about to drop the column `semester` on the `Building` table. All the data in the column will be lost.
   - You are about to drop the column `week_day` on the `Building` table. All the data in the column will be lost.
   - You are about to drop the column `building` on the `Lecture` table. All the data in the column will be lost.
+  - You are about to drop the column `classroom` on the `Lecture` table. All the data in the column will be lost.
 
 */
 -- AlterTable
@@ -17,7 +18,8 @@ DROP COLUMN "semester",
 DROP COLUMN "week_day";
 
 -- AlterTable
-ALTER TABLE "Lecture" DROP COLUMN "building";
+ALTER TABLE "Lecture" DROP COLUMN "building",
+DROP COLUMN "classroom";
 
 -- CreateTable
 CREATE TABLE "ClassRoom" (
