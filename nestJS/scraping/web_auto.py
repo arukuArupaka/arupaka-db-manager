@@ -225,8 +225,17 @@ async def web_search():
                             element_campus = tree.xpath(xpath_campus)
 
                             if element_kamoku:
-                                campus_raw = element_campus[0].text_content() if element_campus else "不明"
-                                campus_name = campus_translation.get(campus_raw, "不明")
+                                if element_campus:
+                                    campus_text = element_campus[0].text_content()
+                                    # "/" が含まれている場合のみ、分割して後半を取得
+                                    if "/" in campus_text:
+                                        split_text = campus_text.split('/', 1)
+                                        campus_raw = split_text[1] if len(split_text) > 1 else split_text[0]
+                                    else:
+                                        campus_raw = campus_text
+                                else:
+                                    campus_raw = "None"
+                                campus_name = campus_translation.get(campus_raw, "None")
                                 data = {
                                     "academic": department_adjust(d),
                                     "classCode": element_kamoku[0].text_content().split(':', 1)[0], 
