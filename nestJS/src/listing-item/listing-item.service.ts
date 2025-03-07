@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   ListingItemPayload,
   RecievedListingItemPayload,
+  validateInput,
 } from './interface/listing-item.payload';
 import { CustomPrismaService } from 'src/prisma/prisma.service';
 import { validate } from 'class-validator';
@@ -16,8 +17,20 @@ export class SearchItemService {
         name: { contains: searchWord },
       },
       //全部select(imageurl含め)
-      select:{id:true,documentId:true,purchasedAt:true,purchasedUserId:true,condition:true,createdAt:true,department:true,description:true,price:true,name:true,firebaseUserId:true,imageUrls:true}
-    });
+      select:{
+        id:true,
+        documentId:true,
+        purchasedAt:true,
+        purchasedUserId:true,
+        condition:true,
+        createdAt:true,
+        department:true,
+        description:true,
+        price:true,
+        name:true,
+        firebaseUserId:true,
+        imageUrls:true
+      }});
     const newitems = items.map((item) => {
       const newitem:ListingItemPayload = {
         id: item.id,
@@ -35,35 +48,34 @@ export class SearchItemService {
   }
 
   async ItemCreate(createItem: RecievedListingItemPayload): Promise<string> {
-    validate(createItem).then((errors)=>{
-      if(errors.length > 0){
-        return errors;
-      }});
-    const adjustedCreateItem = {
-      documentId: createItem.documentId,
-      condition: createItem.condition,
-      department: createItem.department,
-      price: createItem.price,
-      name: createItem.name,
-      firebaseUserId: createItem.firebaseUserId,
-      imageUrls:{
-      create:createItem.imageUrls.map((imageUrl)=>({url:imageUrl}))
-      } 
-    }
-    await this.prisma.listingItem.upsert({
-      where: { documentId: createItem.documentId },
-      update: adjustedCreateItem,
-      create: {
-        documentId: createItem.documentId,
-        condition: createItem.condition,
-        department: createItem.department,
-        price: createItem.price,
-        name: createItem.name,
-        firebaseUserId: createItem.firebaseUserId,
+    try{
+      const validatedCreateItem = await validateInput(RecievedListingItemPayload,createItem)
+        .catch((error:Error)=>{
+          console.log(error); 
+          throw error;});
+      const adjustedCreateItem = {
+        //余計なプロパティの削除
+        documentId: validatedCreateItem.documentId,
+        condition: validatedCreateItem.condition,
+        department: validatedCreateItem.department,
+        price: validatedCreateItem.price,
+        name: validatedCreateItem.name,
+        firebaseUserId: validatedCreateItem.firebaseUserId,
         imageUrls:{
-          create:createItem.imageUrls.map((imageUrl)=>({url:imageUrl}))
-        }
-      },
-    });
-    return 'OK';
-}}
+        create:validatedCreateItem.imageUrls.map((imageUrl)=>({url:imageUrl}))
+        } 
+      }
+      await this.prisma.listingItem.upsert({
+        where: { documentId: adjustedCreateItem.documentId },
+        update: adjustedCreateItem,
+        create:adjustedCreateItem,
+      });
+      return 'OK';
+
+    }catch(error){
+      if (error instanceof Error){
+        return error.message;
+      }
+    }
+  }
+}

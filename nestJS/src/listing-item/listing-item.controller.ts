@@ -18,7 +18,7 @@ export class SearchItemController {
   @Post('create_item')
   async CreateItem(
     @Body() createItem: RecievedListingItemPayload,
-  ): Promise<string|ValidationError[]> {
+  ): Promise<string> {
     return this.searchItemService.ItemCreate(createItem);
   }
 }
