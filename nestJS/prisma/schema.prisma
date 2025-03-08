@@ -29,23 +29,25 @@ enum Weekday {
 }
 
 enum Academics {
-  Law                       // 法学部
-  SocialSciences            // 社会学部
-  InternationalRelations    // 国際関係学部
-  Letters                   // 文学部
-  Economics                 // 経済学部
-  SportandHealthScience     // スポーツ健康科学部
-  ScienceandEngineering     // 理工学部
-  LifeSciences              // 生命科学部
-  PharmaceuticalSciences    // 薬学部
-  GastronomyManagement      // 食マネジメント学部
-  BusinessAdministration    // 経営学部
-  PolicyScience             // 政策科学部
-  ComprehensivePsychology   // 総合心理学部
-  GlobalLiberalArts         // グローバル教養学部
-  ImageArtsandSciences      // 映像学部
-  InformationScienceandEngineering // 情報理工学部
-}
+  All               // すべて
+  LiberalArts       // 教養科目
+  Law               // 法学部
+  SocialSciences    // 産業社会学部
+  InternationalRelations // 国際関係学部
+  Literature        // 文学部
+  Business          // 経営学部
+  PolicyScience     // 政策科学部
+  Psychology        // 総合心理学部
+  GlobalLiberalArts // グローバル教養学部
+  Film              // 映像学部
+  InformationScience // 情報理工学部
+  ScienceAndTechnology // 理工学部
+  Economics         // 経済学部
+  SportsHealthScience // スポーツ健康科学部
+  FoodManagement    // 食マネージメント学部
+  LifeSciences      // 生命科学部
+  Pharmacy          // 薬学部
+  }
 
 enum Condition {
   BRAND_NEW //新品、未使用
@@ -144,16 +146,28 @@ model Building {
 
 model ListingItem{
   id               Int        @id @default(autoincrement()) // ID
-  documentId       String     @map("document_id") //FirebaseにおけるID
+  documentId       String     @unique @map("document_id") //FirebaseにおけるID
   purchasedAt      DateTime?  @map("purchased_at") //購入した日時
   purchasedUserId  String?    @map("purchased_user_id") //購入したユーザーのid
   condition        Condition   //商品の状態
-  createdAt        DateTime   @map("created_at") //出品された日時
+  createdAt        DateTime   @default(now()) @map("created_at") //出品された日時
   department       Academics   //学部
   description      String?     //商品の説明
-  imageUrl         String     @map("image_url") //商品の画像のURL
   price            Int         //商品の価格
   name             String      //商品名
+  firebaseUserId   String     @map("firebase_user_id") //ユーザーID
+
+  imageUrls         ImageUrl[] 
   
   @@map("listing_item")
+}
+
+model ImageUrl {
+  id  Int           @id @default(autoincrement())
+  url String
+  listingItemId Int @map("listing_item_id")
+
+  listingItem ListingItem  @relation(fields: [listingItemId], references: [id]) 
+  
+  @@map("image_url")
 }
