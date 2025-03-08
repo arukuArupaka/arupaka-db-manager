@@ -53,6 +53,7 @@ export class LectureController {
     await this.prisma.lectureClassroom.deleteMany({});
     await this.prisma.classroom.deleteMany({});
     await this.prisma.building.deleteMany({});
-    await this.prisma.lecture.deleteMany({});
+    const countLecture = await this.prisma.lecture.deleteMany({});
+    return countLecture;
   }
 }
