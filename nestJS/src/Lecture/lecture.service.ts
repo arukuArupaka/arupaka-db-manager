@@ -84,6 +84,9 @@ export class LectureService {
     // 教室ごとの講義をMapで管理
     const classroomIdLectureMap = new Map<number, LectureCreatePayload[]>();
 
+    // 講義の重複 upsert を避けるためのキャッシュ
+    const lectureUpsertCache = new Map<string, Promise<any>>();
+
     // バッチサイズ（教室ごとの講義登録件数で判定）
     const BATCH_SIZE = 100;
     // 講義の一括登録用バッチ（Otherキャンパスなど）
@@ -175,40 +178,83 @@ export class LectureService {
         // 教室ごとの講義が一定件数に達したら、一括DB挿入
         if (classroomIdLectureMap.size >= BATCH_SIZE) {
           const insertionPromises = [];
+          // まず、各 mapping を集約する配列を用意
+          const lectureClassroomMappings: {
+            classroomId: number;
+            lectureId: number;
+          }[] = [];
+
+          // 各教室ごとに登録処理を行う
           for (const [
             classroomId,
             lectures,
           ] of classroomIdLectureMap.entries()) {
-            // 講義の一括登録（件数が多い場合はcreateManyへの変更も検討）
             for (const lecture of lectures) {
+              const lectureUniqueKey = `${lecture.schoolYear}-${lecture.academic}-${lecture.semester}-${lecture.name}`;
+              let upsertPromise = lectureUpsertCache.get(lectureUniqueKey);
+              if (!upsertPromise) {
+                upsertPromise = this.prisma.lecture.upsert({
+                  where: {
+                    academic_schoolYear_semester_name: {
+                      schoolYear: lecture.schoolYear,
+                      academic: lecture.academic,
+                      semester: lecture.semester,
+                      name: lecture.name,
+                    },
+                  },
+                  update: {},
+                  create: lecture,
+                });
+                lectureUpsertCache.set(lectureUniqueKey, upsertPromise);
+              }
+              // 各 upsert の完了後に mapping 情報を配列に追加
               insertionPromises.push(
-                this.prisma.lecture
-                  .create({ data: lecture })
-                  .then((createdLecture) =>
-                    this.prisma.lectureClassroom.create({
-                      data: {
-                        classroomId,
-                        lectureId: createdLecture.id,
-                      },
-                    }),
-                  ),
+                upsertPromise.then((createdLecture) => {
+                  lectureClassroomMappings.push({
+                    classroomId,
+                    lectureId: createdLecture.id,
+                  });
+                }),
               );
             }
           }
+
           await Promise.all(insertionPromises);
-          // バッチ処理済みのMapはクリアしてメモリ解放
+
+          // すべての mapping を一括挿入（skipDuplicates オプションを利用）
+          await this.prisma.lectureClassroom.createMany({
+            data: lectureClassroomMappings,
+            skipDuplicates: true, // 重複している場合はスキップ
+          });
+
+          await Promise.all(insertionPromises);
+          // バッチ処理済みの Map はクリアしてメモリ解放
           classroomIdLectureMap.clear();
         }
       }
 
       // ファイル単位で残った講義を挿入（lectureBatch の場合）
       if (lectureBatch.length > 0) {
-        await this.prisma.lecture.createMany({ data: lectureBatch });
+        // 講義のユニークなキーでデデュプリケーション
+        const uniqueLectureMap = new Map<string, LectureCreatePayload>();
+        lectureBatch.forEach((lecture) => {
+          const key = `${lecture.schoolYear}-${lecture.academic}-${lecture.semester}-${lecture.name}`;
+          if (!uniqueLectureMap.has(key)) {
+            uniqueLectureMap.set(key, lecture);
+          }
+        });
+        const uniqueLectureBatch = Array.from(uniqueLectureMap.values());
+
+        // skipDuplicates オプションも併用（Prisma が対応している場合）
+        await this.prisma.lecture.createMany({
+          data: uniqueLectureBatch,
+          skipDuplicates: true,
+        });
         lectureBatch = [];
       }
-    }
 
-    return 'ok';
+      return 'ok';
+    }
   }
 
   async getAvailableClassrooms(
