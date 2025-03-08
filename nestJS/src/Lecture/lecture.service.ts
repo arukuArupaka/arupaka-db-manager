@@ -9,6 +9,7 @@ import { Campus } from '@prisma/client';
 import { GetAvailableClassroomsInput } from './interface/get-available-classrooms.input';
 import { GetAvailableClassroomsPayload } from './interface/get-available-classrooms.payload';
 import { LectureCreatePayload } from './interface/lecture-create.payload';
+import { getBuildingClassroomsInput } from './interface/get-building-classrooms.input';
 
 @Injectable()
 export class LectureService {
@@ -25,6 +26,7 @@ export class LectureService {
     BKCBuildings.forEach((b) => (BKCClassrooms[b] = []));
     OICBuildings.forEach((b) => (OICClassrooms[b] = []));
     KICBuildings.forEach((b) => (KICClassrooms[b] = []));
+    OtherClassrooms['Other'] = [];
 
     // 各キャンパスの建物リストから正規表現を事前生成
     const regexBKC = new RegExp(BKCBuildings.join('|'), 'g');
@@ -76,25 +78,27 @@ export class LectureService {
   }
 
   async loadLecture() {
-    // 建物作成済みキャッシュ（キーは "campus:buildingName"）
+    // キャッシュをMapで管理する（より高速なキー検索とループ制御が可能）
     const buildingCache = new Map<string, { id: number; campus: string }>();
-    const classroomIdLectureMap = new Map<number, LectureCreatePayload[]>();
-    // 一度に挿入する講義数を抑えるためのバッチサイズ
-    const BATCH_SIZE = 100;
-    let lectureBatch = [];
     const classroomCache = new Map<string, number>();
+    // 教室ごとの講義をMapで管理
+    const classroomIdLectureMap = new Map<number, LectureCreatePayload[]>();
+
+    // バッチサイズ（教室ごとの講義登録件数で判定）
+    const BATCH_SIZE = 100;
+    // 講義の一括登録用バッチ（Otherキャンパスなど）
+    let lectureBatch: LectureCreatePayload[] = [];
 
     for (let i = 1; i < 4; i++) {
       const filePath = path.join(__dirname, `mymodel${i}.json`);
       const jsonData = fs.readFileSync(filePath, 'utf8');
       const data = JSON.parse(jsonData);
-      const classrooms = [];
 
-      // 各講義を逐次処理
+      // 各講義の逐次処理
       for (const el of data) {
-        // '/' で区切られた教室名を建物ごとに分割
+        // 教室名を建物ごとに分割する（例: { BKC: { '建物A': ['101号室', '102号室'], ... }, ... }）
         const classroomTable = this.splitClassroom(el.fields.classroom);
-        const newLecture = {
+        const newLecture: LectureCreatePayload = {
           schoolYear: el.fields.schoolYear,
           classCode: el.fields.classCode,
           name: el.fields.name,
@@ -109,84 +113,95 @@ export class LectureService {
           rawClassroom: el.fields.classroom,
         };
 
-        // 各キャンパスごとに建物を作成（キャッシュ済みなら再利用）
+        // 各キャンパスごとに処理
         for (const campus of ['BKC', 'OIC', 'KIC', 'Other']) {
-          // 「BKC」というような教室の場合は例外処理
           if (campus === 'Other') {
-            await this.prisma.lecture.create({
-              data: newLecture,
-            });
+            // Otherキャンパスはそのまま一括登録用バッチに追加
+            lectureBatch.push(newLecture);
             continue;
           }
 
-          // そのキャンパスの建物を全取得
-          const buildingNames = Object.keys(classroomTable[campus]);
-          building: for (const buildingName of buildingNames) {
+          // 指定キャンパスの建物一覧を取得
+          const buildingNames = Object.keys(classroomTable[campus] || {});
+          for (const buildingName of buildingNames) {
             const cacheKey = `${campus}:${buildingName}`;
-            if (!buildingCache.has(cacheKey)) {
-              // DB へ建物を作成
-              const building = await this.prisma.building.create({
+            let building = buildingCache.get(cacheKey);
+            if (!building) {
+              // キャッシュにない場合はDBに作成しキャッシュ登録
+              building = await this.prisma.building.create({
                 data: { name: buildingName, campus: campus as Campus },
               });
               buildingCache.set(cacheKey, building);
             }
-            const rooms: string[] = classroomTable[campus][buildingName];
-            const uniqueRooms = [...new Set(rooms)];
-            if (uniqueRooms && uniqueRooms.length > 0) {
-              // 建物 ID を取得
-              const building = await this.prisma.building.findUnique({
-                where: { name: buildingName },
-              });
 
+            // 教室のリスト（重複排除）
+            const rooms: string[] = classroomTable[campus][buildingName] || [];
+            const uniqueRooms = Array.from(new Set(rooms));
+            if (uniqueRooms.length > 0) {
+              // キャッシュから建物情報を再取得するのではなく、先ほど作成・キャッシュしたbuildingを利用
               for (const room of uniqueRooms) {
-                const classroomId = classroomCache.get(
-                  `${room}:${buildingName}`,
-                );
+                const classroomKey = `${room}:${buildingName}`;
+                const classroomId = classroomCache.get(classroomKey);
                 if (classroomId) {
-                  classroomIdLectureMap[classroomId].push(newLecture);
-                  continue building;
+                  // 既に存在する場合は講義を追加
+                  let lectures = classroomIdLectureMap.get(classroomId);
+                  if (!lectures) {
+                    lectures = [];
+                    classroomIdLectureMap.set(classroomId, lectures);
+                  }
+                  lectures.push(newLecture);
+                  // 教室が見つかった時点で、同一建物の他の教室への追加は不要なら次の建物へ
+                  continue;
                 }
               }
 
-              // 新規作成したclassroomのIdをキーとしてlectureをマップ
+              // 新規教室がある場合、バッチで作成して講義を登録
               await Promise.all(
                 uniqueRooms.map(async (room) => {
+                  const classroomKey = `${room}:${buildingName}`;
+                  // 既にキャッシュにあればスキップ（並列処理時の競合対策）
+                  if (classroomCache.has(classroomKey)) return;
                   const createdClassroom = await this.prisma.classroom.create({
-                    data: {
-                      name: room,
-                      buildingId: building.id,
-                    },
+                    data: { name: room, buildingId: building.id },
                   });
-                  classroomIdLectureMap[createdClassroom.id].push(newLecture);
-                  classroomCache.set(
-                    `${room}:${buildingName}`,
-                    createdClassroom.id,
-                  );
+                  classroomCache.set(classroomKey, createdClassroom.id);
+                  classroomIdLectureMap.set(createdClassroom.id, [newLecture]);
                 }),
               );
             }
           }
         }
 
-        // バッチサイズに達したらDBへ一括挿入
+        // 教室ごとの講義が一定件数に達したら、一括DB挿入
         if (classroomIdLectureMap.size >= BATCH_SIZE) {
-          for (const [classroomId, lectures] of classroomIdLectureMap) {
-            lectures.forEach(async (lecture) => {
-              const createdLecture = await this.prisma.lecture.create({
-                data: lecture,
-              });
-              await this.prisma.lectureClassroom.create({
-                data: {
-                  classroomId: classroomId,
-                  lectureId: createdLecture.id,
-                },
-              });
-            });
+          const insertionPromises = [];
+          for (const [
+            classroomId,
+            lectures,
+          ] of classroomIdLectureMap.entries()) {
+            // 講義の一括登録（件数が多い場合はcreateManyへの変更も検討）
+            for (const lecture of lectures) {
+              insertionPromises.push(
+                this.prisma.lecture
+                  .create({ data: lecture })
+                  .then((createdLecture) =>
+                    this.prisma.lectureClassroom.create({
+                      data: {
+                        classroomId,
+                        lectureId: createdLecture.id,
+                      },
+                    }),
+                  ),
+              );
+            }
           }
+          await Promise.all(insertionPromises);
+          // バッチ処理済みのMapはクリアしてメモリ解放
+          classroomIdLectureMap.clear();
         }
       }
 
-      // そのファイル内で残った講義を挿入
+      // ファイル単位で残った講義を挿入（lectureBatch の場合）
       if (lectureBatch.length > 0) {
         await this.prisma.lecture.createMany({ data: lectureBatch });
         lectureBatch = [];
@@ -199,6 +214,13 @@ export class LectureService {
   async getAvailableClassrooms(
     input: GetAvailableClassroomsInput,
   ): Promise<GetAvailableClassroomsPayload[]> {
+    // 「教室名」をキーとして、講義情報（GetAvailableClassroomsPayload）を保持するMap
+    const classroomLectureMap = new Map<
+      string,
+      GetAvailableClassroomsPayload
+    >();
+
+    // 建物とその教室を取得（必要な情報だけselect）
     const buildings = await this.prisma.building.findMany({
       where: { campus: input.campus },
       select: {
@@ -207,6 +229,7 @@ export class LectureService {
       },
     });
 
+    // 条件に合致する講義を取得
     const lectures = await this.prisma.lecture.findMany({
       where: {
         campus: input.campus,
@@ -218,50 +241,68 @@ export class LectureService {
       select: {
         name: true,
         teacher: true,
-        classroom: {
+        // 講義に紐づく教室情報を取得
+        lectureClassrooms: {
           select: {
-            name: true,
-            building: true,
+            classroom: {
+              select: {
+                name: true,
+                building: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
     });
 
-    console.log(lectures);
+    // 講義ごとに、該当する教室名をキーとしてMapに登録
+    lectures.forEach((lecture) => {
+      lecture.lectureClassrooms.forEach((lc) => {
+        // キーは「教室名」だけにしていますが、必要に応じて「建物名:教室名」といった形式にするとより一意にできます
+        const key = lc.classroom.name;
+        // すでに登録済みなら（複数講義がある場合）、ここでは最初の講義情報のみを保持
+        if (!classroomLectureMap.has(key)) {
+          classroomLectureMap.set(key, {
+            building: lc.classroom.building.name,
+            classroom: lc.classroom.name,
+            isUsed: true,
+            name: lecture.name,
+            teacher: lecture.teacher,
+          });
+        }
+      });
+    });
 
-    const lectureClassroomMap = lectures.map((lecture) => [
-      lecture.classroom.name,
-      lecture,
-    ]);
-
-    const availableClassrooms = buildings.flatMap((building) => {
-      return building.classrooms.map((classroom) => {
-        const lecture = lectureClassroomMap[classroom.name];
+    // 建物一覧から利用可能な教室の配列を作成
+    // ここでは各建物の各教室について、Map に登録された講義情報があれば使用中(true)、
+    // なければ利用可能(false)として返します
+    const availableClassrooms = buildings.flatMap((building) =>
+      building.classrooms.map((classroom) => {
+        // Mapからキー（ここでは教室名）で情報を取得
+        const lecture = classroomLectureMap.get(classroom.name);
         if (!lecture) {
-          // lecture がない場合、building と classroom の情報を使って返す例
           return {
-            building: building.name, // buildingオブジェクトから取得
+            building: building.name,
             classroom: classroom.name,
             isUsed: false,
           } as GetAvailableClassroomsPayload;
         }
-        return {
-          building: lecture.classroom.building.name,
-          classroom: lecture.classroom.name,
-          isUsed: true,
-          name: lecture.name!,
-          teacher: lecture.teacher!,
-        } as GetAvailableClassroomsPayload;
-      });
-    });
+        // もし Map にあれば、その講義情報を返す
+        return lecture;
+      }),
+    );
 
     return availableClassrooms;
   }
 
-  async getBuildingClassrooms() {
+  async getBuildingClassrooms(input: getBuildingClassroomsInput) {
     const buildings = await this.prisma.building.findUnique({
       where: {
-        name: 'コラーニングⅠ',
+        name: input.name,
       },
       select: {
         name: true,

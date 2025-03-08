@@ -23,14 +23,9 @@ export class LectureController {
     return this.lectureService.loadLecture();
   }
 
-  @Get('delete-lectures')
-  async deleteLecture() {
-    return await this.prisma.lecture.deleteMany({});
-  }
-
   @Get('get-building-classrooms')
-  async getBuildingClassrooms() {
-    return this.lectureService.getBuildingClassrooms();
+  async getBuildingClassrooms(@Query('name') name: string) {
+    return this.lectureService.getBuildingClassrooms({ name });
   }
 
   @Get('get-available-classrooms')
@@ -51,5 +46,13 @@ export class LectureController {
       weekday,
       period,
     });
+  }
+
+  @Get('delete-lectures')
+  async deleteLectures() {
+    await this.prisma.lectureClassroom.deleteMany({});
+    await this.prisma.classroom.deleteMany({});
+    await this.prisma.building.deleteMany({});
+    await this.prisma.lecture.deleteMany({});
   }
 }
