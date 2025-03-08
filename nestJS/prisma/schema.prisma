@@ -75,8 +75,8 @@ model Lecture {
   rawClassroom    String?   @map("raw_classrom") // 念のため教室も入れておく
   lectureClassrooms LectureClassroom[] // リレーション: Lecture -> lectureClassroom
 
-  @@unique([academic, schoolYear, semester, name])
-  @@index([academic, schoolYear, semester, name])
+  @@unique([academic, schoolYear, semester, name, weekday, period])
+  @@index([academic, schoolYear, semester, name, weekday, period])
   @@index([schoolYear, semester, weekday, period, academic])
   @@index([schoolYear,semester,weekday,period,campus])
   @@index ([name, teacher])  // 複合キー
