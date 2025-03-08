@@ -7,35 +7,11 @@ import { OICBuildings } from './classroom/oic-buildings';
 import { KICBuildings } from './classroom/kic-buildings';
 import { LectureCreatePayload } from './interface/lecture-create.payload';
 import { Campus } from '@prisma/client';
+import { GetAvailableClassroomsInput } from './interface/get-available-classrooms.input';
 
 @Injectable()
 export class LectureService {
   constructor(private readonly prisma: CustomPrismaService) {}
-
-  // async getClassRoom(
-  //   campus: Campus,
-  //   year: number,
-  //   semester: boolean,
-  //   day: Weekday,
-  //   period: number,
-  // ): Promise<UnavailableRoomsPayload> {
-  //   const lectures = await this.prisma.lecture.findMany({
-  //     where: {
-  //       schoolYear: year,
-  //       semester: semester,
-  //       weekday: day,
-  //       period: period,
-  //       campus: campus,
-  //     },
-  //   });
-
-  //   return unavailableRooms;
-  // }
-
-  // 事前定義済みの各キャンパスの建物リスト（例）
-  BKCBuildings = ['BKC_A', 'BKC_B']; // 実際の建物名リスト
-  OICBuildings = ['OIC_A', 'OIC_B'];
-  KICBuildings = ['KIC_A', 'KIC_B'];
 
   private splitClassroom(classroom: string) {
     // 各キャンパスごとに、建物名をキー、教室名の配列を値とするオブジェクト
@@ -97,8 +73,8 @@ export class LectureService {
     // 一度に挿入する講義数を抑えるためのバッチサイズ
     const BATCH_SIZE = 100;
     let lectureBatch: LectureCreatePayload[] = [];
+    const classroomCache = new Map<string, string>();
 
-    // mymodel1.json ～ mymodel3.json を順次処理
     for (let i = 1; i < 4; i++) {
       const filePath = path.join(__dirname, `mymodel${i}.json`);
       const jsonData = fs.readFileSync(filePath, 'utf8');
@@ -106,11 +82,12 @@ export class LectureService {
 
       // 各講義を逐次処理
       for (const el of data) {
+        // '/' で区切られた教室名を建物ごとに分割
         const classroomTable = this.splitClassroom(el.fields.classroom);
 
         // 各キャンパスごとに建物を作成（キャッシュ済みなら再利用）
         for (const campus of ['BKC', 'OIC', 'KIC']) {
-          // classroomTable[campus] は、キーが建物名、値が教室名配列のオブジェクト
+          // そのキャンパスの建物を全取得
           const buildingNames = Object.keys(classroomTable[campus]);
           for (const buildingName of buildingNames) {
             const cacheKey = `${campus}:${buildingName}`;
@@ -120,16 +97,36 @@ export class LectureService {
                 data: { name: buildingName, campus: campus as Campus },
               });
               buildingCache.set(cacheKey, building);
-              // 対応する教室を一括作成（重複登録対策は必要に応じて追加）
-              const rooms = classroomTable[campus][buildingName];
-              if (rooms && rooms.length > 0) {
-                await this.prisma.classRoom.createMany({
-                  data: rooms.map((room) => ({
-                    name: room,
-                    buildingId: building.id,
-                  })),
-                });
+            }
+            const rooms: string[] = classroomTable[campus][buildingName];
+            const uniqueRooms = [...new Set(rooms)];
+            if (uniqueRooms && uniqueRooms.length > 0) {
+              // 建物 ID を取得
+              const building = await this.prisma.building.findUnique({
+                where: { name: buildingName },
+              });
+
+              if (
+                uniqueRooms.some((room) =>
+                  classroomCache.has(`${room}:${buildingName}`),
+                )
+              ) {
+                continue; // 次の buildingName へ
               }
+
+              await this.prisma.classroom.createMany({
+                data: uniqueRooms.map((room) => ({
+                  name: room,
+                  buildingId: building.id,
+                })),
+              });
+
+              uniqueRooms.forEach((room) => {
+                classroomCache.set(`${room}:${buildingName}`, 'exists');
+              });
+            }
+            if (campus === 'BKC') {
+              console.log(buildingName);
             }
           }
         }
@@ -164,6 +161,32 @@ export class LectureService {
     }
 
     // 必要に応じて作成した講義一覧を返す
-    return;
+    return 'ok';
+  }
+
+  async getAvailableClassrooms(input: GetAvailableClassroomsInput) {
+    const classrooms = await this.prisma.lecture.findMany({
+      where: {
+        campus: input.campus,
+        schoolYear: input.schoolYear,
+        semester: input.semester,
+        weekday: input.weekday,
+        period: input.period,
+      },
+      select: {
+        lectureClassRooms: {
+          select: {
+            classRoom: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return new Set(
+      classrooms.map((el) => el.lectureClassRooms[0].classRoom
   }
 }

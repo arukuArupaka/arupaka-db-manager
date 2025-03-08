@@ -1,7 +1,9 @@
 // src/lecture/lecture.controller.ts
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { CustomPrismaService } from '../prisma/prisma.service';
 import { LectureService } from './lecture.service';
+import { Campus, Weekday } from '@prisma/client';
+import { UnavailableRoomsPayload } from './interface/unavilable-classrooms.payload';
 
 @Controller('lecture')
 export class LectureController {
@@ -47,23 +49,23 @@ export class LectureController {
     );
   }
 
-  // @Get('get_unavailable_classrooms')
+  @Get('get_available_classrooms')
   /*エンドポイントを叩く際、正しい形式で入力するように注意してください
     以下の引数の型注釈を参考にしてください。(特にCampusやWeekdayなどは)
      */
-  // async getUnavailableClassRooms(
-  //   @Query('campus') campus: Campus,
-  //   @Query('year') year: number,
-  //   @Query('semester') semester: boolean,
-  //   @Query('weekday') weekDay: Weekday,
-  //   @Query('period') period: number,
-  // ): Promise<UnavailableRoomsPayload> {
-  //   return this.lectureService.getClassRoom(
-  //     campus,
-  //     year,
-  //     semester,
-  //     weekDay,
-  //     period,
-  //   );
-  // }
+  async getUnavailableClassRooms(
+    @Query('campus') campus: Campus,
+    @Query('schoolYear') schoolYear: number,
+    @Query('semester') semester: boolean,
+    @Query('weekday') weekday: Weekday,
+    @Query('period') period: number,
+  ): Promise<UnavailableRoomsPayload> {
+    return this.lectureService.getAvailableClassrooms({
+      campus,
+      schoolYear,
+      semester,
+      weekday,
+      period,
+    });
+  }
 }
