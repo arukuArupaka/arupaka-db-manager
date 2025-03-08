@@ -14,4 +14,6 @@ export type LectureCreatePayload = {
   weekday: Weekday;
   period: number;
   campus: Campus;
+  rawClassroom: string;
+  classroomId: number;
 };

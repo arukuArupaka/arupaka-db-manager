@@ -8,6 +8,7 @@ import { KICBuildings } from './classroom/kic-buildings';
 import { LectureCreatePayload } from './interface/lecture-create.payload';
 import { Campus } from '@prisma/client';
 import { GetAvailableClassroomsInput } from './interface/get-available-classrooms.input';
+import { GetAvailableClassroomsPayload } from './interface/get-available-classrooms.payload';
 
 @Injectable()
 export class LectureService {
@@ -144,6 +145,8 @@ export class LectureService {
           weekday: el.fields.weekday,
           period: el.fields.period,
           campus: el.fields.campus === '不明' ? 'OIC' : el.fields.campus,
+          rawClassroom: el.fields.classroom,
+          classroomId: 
         });
 
         // バッチサイズに達したらDBへ一括挿入
@@ -164,8 +167,18 @@ export class LectureService {
     return 'ok';
   }
 
-  async getAvailableClassrooms(input: GetAvailableClassroomsInput) {
-    const classrooms = await this.prisma.lecture.findMany({
+  async getAvailableClassrooms(
+    input: GetAvailableClassroomsInput,
+  ): Promise<GetAvailableClassroomsPayload[]> {
+    const buildings = await this.prisma.building.findMany({
+      where: { campus: input.campus },
+      select: {
+        name: true,
+        classrooms: { select: { name: true } },
+      },
+    });
+
+    const lectures = await this.prisma.lecture.findMany({
       where: {
         campus: input.campus,
         schoolYear: input.schoolYear,
@@ -174,19 +187,63 @@ export class LectureService {
         period: input.period,
       },
       select: {
-        lectureClassRooms: {
+        name: true,
+        teacher: true,
+        classroom: {
           select: {
-            classRoom: {
-              select: {
-                name: true,
-              },
-            },
+            name: true,
+            building: true,
           },
         },
       },
     });
 
-    return new Set(
-      classrooms.map((el) => el.lectureClassRooms[0].classRoom
+    console.log(lectures);
+
+    const lectureClassroomMap = lectures.map((lecture) => [
+      lecture.classroom.name,
+      lecture,
+    ]);
+
+    const availableClassrooms = buildings.flatMap((building) => {
+      return building.classrooms.map((classroom) => {
+        const lecture = lectureClassroomMap[classroom.name];
+        if (!lecture) {
+          // lecture がない場合、building と classroom の情報を使って返す例
+          return {
+            building: building.name, // buildingオブジェクトから取得
+            classroom: classroom.name,
+            isUsed: false,
+          } as GetAvailableClassroomsPayload;
+        }
+        return {
+          building: lecture.classroom.building.name,
+          classroom: lecture.classroom.name,
+          isUsed: true,
+          name: lecture.name!,
+          teacher: lecture.teacher!,
+        } as GetAvailableClassroomsPayload;
+      });
+    });
+
+    return availableClassrooms;
+  }
+
+  async getBuildingClassrooms() {
+    const buildings = await this.prisma.building.findUnique({
+      where: {
+        name: 'コラーニングⅠ',
+      },
+      select: {
+        name: true,
+        classrooms: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    return buildings;
   }
 }
