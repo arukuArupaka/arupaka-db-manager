@@ -73,9 +73,7 @@ model Lecture {
   feedbacks       Feedback[]
   campus          Campus?
   rawClassroom    String?   @map("raw_classrom") // 念のため教室も入れておく
-  classroomId     Int?       @map("classroom_id")
-  classroom       Classroom? @relation(fields: [classroomId], references: [id]) // リレーション: Lecture -> Classroom
-
+  lectureClassrooms LectureClassroom[] // リレーション: Lecture -> lectureClassroom
 
   @@index([schoolYear, semester, weekday, period, academic])
   @@index([schoolYear,semester,weekday,period,campus])
@@ -139,13 +137,25 @@ model Building {
   classrooms   Classroom[] // リレーション: Building -> ClassRoom
 }
 
+model LectureClassroom {
+  id           Int       @id @default(autoincrement()) // ID
+  lectureId    Int       @map("lecture_id")// リレーションで参照する講義ID
+  classroomId  Int       @map("classroom_id")// リレーションで参照する教室ID
+
+  lecture      Lecture   @relation(fields: [lectureId], references: [id]) // リレーション: Lecture -> lectureClassroom
+  classroom    Classroom @relation(fields: [classroomId], references: [id]) // リレーション: Classroom -> lectureClassroom
+
+  @@unique([lectureId, classroomId])
+  @@index([lectureId, classroomId])
+}
+
 model Classroom {
   id           Int       @id @default(autoincrement()) // ID
   buildingId   Int       @map("building_id")// リレーションで参照する建物ID
   name         String    // 教室名
 
   building     Building @relation(fields: [buildingId], references: [id]) // リレーション: Classroom -> Building
-  lectures     Lecture[] // リレーション: Classroom -> Lecture 
+  lectureClassrooms LectureClassroom[] // リレーション: Classroom -> lectureClassroom
 
   @@unique([buildingId, name])
   @@index([buildingId, name])
