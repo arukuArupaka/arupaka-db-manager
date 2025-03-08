@@ -142,8 +142,8 @@ model LectureClassroom {
   lectureId    Int       @map("lecture_id")// リレーションで参照する講義ID
   classroomId  Int       @map("classroom_id")// リレーションで参照する教室ID
 
-  lecture      Lecture   @relation(fields: [lectureId], references: [id]) // リレーション: Lecture -> lectureClassroom
-  classroom    Classroom @relation(fields: [classroomId], references: [id]) // リレーション: Classroom -> lectureClassroom
+  lecture      Lecture?   @relation(fields: [lectureId], references: [id]) // リレーション: Lecture -> lectureClassroom
+  classroom    Classroom? @relation(fields: [classroomId], references: [id]) // リレーション: Classroom -> lectureClassroom
 
   @@unique([lectureId, classroomId])
   @@index([lectureId, classroomId])
