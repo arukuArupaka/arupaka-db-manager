@@ -90,7 +90,7 @@ export class LectureService {
     let lectureBatch: LectureCreatePayload[] = [];
 
     for (let i = 1; i < 4; i++) {
-      const filePath = path.join(__dirname, `mymodel${i}.json`);
+      const filePath = path.join(__dirname, 'lecture-data', `mymodel${i}.json`);
       const jsonData = fs.readFileSync(filePath, 'utf8');
       const data = JSON.parse(jsonData);
 
