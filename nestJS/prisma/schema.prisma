@@ -131,18 +131,21 @@ model LabFeedback {
 model Building {
   id           Int       @id @default(autoincrement()) // ID
 	campus       Campus // enumのやつ
-	name         String // 建物名
+	name         String     @unique() // 建物名
   
-  classRooms   ClassRoom[] // リレーション: Building -> ClassRoom
+  classRooms   Classroom[] // リレーション: Building -> ClassRoom
 }
 
-model ClassRoom {
+model Classroom {
   id           Int       @id @default(autoincrement()) // ID
   buildingId   Int       @map("building_id")// リレーションで参照する建物ID
   name         String    // 教室名
 
   building     Building @relation(fields: [buildingId], references: [id]) // リレーション: ClassRoom -> Building
   lectureClassRooms LectureClassRoom[] // リレーション: ClassRoom -> BuildingClassRoom
+
+  @@unique([buildingId, name])
+  @@index([buildingId, name])
 }
 
 model LectureClassRoom {
@@ -151,7 +154,7 @@ model LectureClassRoom {
   classRoomId  Int       @map("class_room_id")// リレーションで参照する教室ID
 
   lecture       Lecture?   @relation(fields: [lectureId], references: [id]) // リレーション: LectureClassRoom -> Lecture
-  classRoom     ClassRoom? @relation(fields: [classRoomId], references: [id]) // リレーション: LectureClassRoom -> ClassRoom
+  classRoom     Classroom? @relation(fields: [classRoomId], references: [id]) // リレーション: LectureClassRoom -> ClassRoom
 }
 
 model ListingItem{
