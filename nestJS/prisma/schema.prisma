@@ -76,6 +76,7 @@ model Lecture {
   lectureClassrooms LectureClassroom[] // リレーション: Lecture -> lectureClassroom
 
   @@unique([academic, schoolYear, semester, name])
+  @@index([academic, schoolYear, semester, name])
   @@index([schoolYear, semester, weekday, period, academic])
   @@index([schoolYear,semester,weekday,period,campus])
   @@index ([name, teacher])  // 複合キー

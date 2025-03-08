@@ -58,6 +58,9 @@ CREATE UNIQUE INDEX "Classroom_building_id_name_key" ON "Classroom"("building_id
 CREATE UNIQUE INDEX "Building_name_key" ON "Building"("name");
 
 -- CreateIndex
+CREATE INDEX "Lecture_academic_school_year_semester_name_idx" ON "Lecture"("academic", "school_year", "semester", "name");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Lecture_academic_school_year_semester_name_key" ON "Lecture"("academic", "school_year", "semester", "name");
 
 -- AddForeignKey
