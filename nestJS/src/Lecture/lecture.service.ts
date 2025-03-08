@@ -96,6 +96,7 @@ export class LectureService {
       const filePath = path.join(__dirname, 'lecture-data', `2025-${i}.json`);
       const jsonData = fs.readFileSync(filePath, 'utf8');
       const data = JSON.parse(jsonData);
+      console.log(data.length);
 
       // 各講義の逐次処理
       for (const el of data) {
@@ -195,11 +196,13 @@ export class LectureService {
               if (!upsertPromise) {
                 upsertPromise = this.prisma.lecture.upsert({
                   where: {
-                    academic_schoolYear_semester_name: {
+                    academic_schoolYear_semester_name_weekday_period: {
                       schoolYear: lecture.schoolYear,
                       academic: lecture.academic,
                       semester: lecture.semester,
                       name: lecture.name,
+                      weekday: lecture.weekday,
+                      period: lecture.period,
                     },
                   },
                   update: {},
@@ -252,9 +255,8 @@ export class LectureService {
         });
         lectureBatch = [];
       }
-
-      return 'ok';
     }
+    return 'ok';
   }
 
   async getAvailableClassrooms(
