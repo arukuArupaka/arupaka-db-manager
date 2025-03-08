@@ -15,5 +15,4 @@ export type LectureCreatePayload = {
   period: number;
   campus: Campus;
   rawClassroom: string;
-  classroomId: number;
 };

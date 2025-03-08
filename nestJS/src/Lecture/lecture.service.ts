@@ -5,10 +5,10 @@ import * as path from 'path';
 import { BKCBuildings } from './classroom/bkc-buildings';
 import { OICBuildings } from './classroom/oic-buildings';
 import { KICBuildings } from './classroom/kic-buildings';
-import { LectureCreatePayload } from './interface/lecture-create.payload';
 import { Campus } from '@prisma/client';
 import { GetAvailableClassroomsInput } from './interface/get-available-classrooms.input';
 import { GetAvailableClassroomsPayload } from './interface/get-available-classrooms.payload';
+import { LectureCreatePayload } from './interface/lecture-create.payload';
 
 @Injectable()
 export class LectureService {
@@ -19,6 +19,7 @@ export class LectureService {
     const BKCClassrooms: { [key: string]: string[] } = {};
     const OICClassrooms: { [key: string]: string[] } = {};
     const KICClassrooms: { [key: string]: string[] } = {};
+    const OtherClassrooms: { [key: string]: string[] } = {};
 
     // 初期化
     BKCBuildings.forEach((b) => (BKCClassrooms[b] = []));
@@ -59,38 +60,68 @@ export class LectureService {
           KICClassrooms[building].push(room);
         });
       }
+
+      // どのキャンパスにも含まれない場合はOtherとして処理
+      if (!matches) {
+        OtherClassrooms['Other'].push(roomStr);
+      }
     }
 
     return {
       BKC: BKCClassrooms,
       OIC: OICClassrooms,
       KIC: KICClassrooms,
+      Other: OtherClassrooms,
     };
   }
 
   async loadLecture() {
     // 建物作成済みキャッシュ（キーは "campus:buildingName"）
     const buildingCache = new Map<string, { id: number; campus: string }>();
+    const classroomIdLectureMap = new Map<number, LectureCreatePayload[]>();
     // 一度に挿入する講義数を抑えるためのバッチサイズ
     const BATCH_SIZE = 100;
-    let lectureBatch: LectureCreatePayload[] = [];
-    const classroomCache = new Map<string, string>();
+    let lectureBatch = [];
+    const classroomCache = new Map<string, number>();
 
     for (let i = 1; i < 4; i++) {
       const filePath = path.join(__dirname, `mymodel${i}.json`);
       const jsonData = fs.readFileSync(filePath, 'utf8');
       const data = JSON.parse(jsonData);
+      const classrooms = [];
 
       // 各講義を逐次処理
       for (const el of data) {
         // '/' で区切られた教室名を建物ごとに分割
         const classroomTable = this.splitClassroom(el.fields.classroom);
+        const newLecture = {
+          schoolYear: el.fields.schoolYear,
+          classCode: el.fields.classCode,
+          name: el.fields.name,
+          credits: Number(el.fields.credits),
+          syllabus: el.fields.syllabus,
+          teacher: el.fields.teacher,
+          academic: el.fields.academic,
+          semester: Boolean(el.fields.semester),
+          weekday: el.fields.weekday,
+          period: el.fields.period,
+          campus: el.fields.campus === '不明' ? 'OIC' : el.fields.campus,
+          rawClassroom: el.fields.classroom,
+        };
 
         // 各キャンパスごとに建物を作成（キャッシュ済みなら再利用）
-        for (const campus of ['BKC', 'OIC', 'KIC']) {
+        for (const campus of ['BKC', 'OIC', 'KIC', 'Other']) {
+          // 「BKC」というような教室の場合は例外処理
+          if (campus === 'Other') {
+            await this.prisma.lecture.create({
+              data: newLecture,
+            });
+            continue;
+          }
+
           // そのキャンパスの建物を全取得
           const buildingNames = Object.keys(classroomTable[campus]);
-          for (const buildingName of buildingNames) {
+          building: for (const buildingName of buildingNames) {
             const cacheKey = `${campus}:${buildingName}`;
             if (!buildingCache.has(cacheKey)) {
               // DB へ建物を作成
@@ -107,52 +138,51 @@ export class LectureService {
                 where: { name: buildingName },
               });
 
-              if (
-                uniqueRooms.some((room) =>
-                  classroomCache.has(`${room}:${buildingName}`),
-                )
-              ) {
-                continue; // 次の buildingName へ
+              for (const room of uniqueRooms) {
+                const classroomId = classroomCache.get(
+                  `${room}:${buildingName}`,
+                );
+                if (classroomId) {
+                  classroomIdLectureMap[classroomId].push(newLecture);
+                  continue building;
+                }
               }
 
-              await this.prisma.classroom.createMany({
-                data: uniqueRooms.map((room) => ({
-                  name: room,
-                  buildingId: building.id,
-                })),
-              });
-
-              uniqueRooms.forEach((room) => {
-                classroomCache.set(`${room}:${buildingName}`, 'exists');
-              });
-            }
-            if (campus === 'BKC') {
-              console.log(buildingName);
+              // 新規作成したclassroomのIdをキーとしてlectureをマップ
+              await Promise.all(
+                uniqueRooms.map(async (room) => {
+                  const createdClassroom = await this.prisma.classroom.create({
+                    data: {
+                      name: room,
+                      buildingId: building.id,
+                    },
+                  });
+                  classroomIdLectureMap[createdClassroom.id].push(newLecture);
+                  classroomCache.set(
+                    `${room}:${buildingName}`,
+                    createdClassroom.id,
+                  );
+                }),
+              );
             }
           }
         }
 
-        // 講義オブジェクトを作成してバッチに追加
-        lectureBatch.push({
-          schoolYear: el.fields.schoolYear,
-          classCode: el.fields.classCode,
-          name: el.fields.name,
-          credits: Number(el.fields.credits),
-          syllabus: el.fields.syllabus,
-          teacher: el.fields.teacher,
-          academic: el.fields.academic,
-          semester: Boolean(el.fields.semester),
-          weekday: el.fields.weekday,
-          period: el.fields.period,
-          campus: el.fields.campus === '不明' ? 'OIC' : el.fields.campus,
-          rawClassroom: el.fields.classroom,
-          classroomId: 
-        });
-
         // バッチサイズに達したらDBへ一括挿入
-        if (lectureBatch.length >= BATCH_SIZE) {
-          await this.prisma.lecture.createMany({ data: lectureBatch });
-          lectureBatch = [];
+        if (classroomIdLectureMap.size >= BATCH_SIZE) {
+          for (const [classroomId, lectures] of classroomIdLectureMap) {
+            lectures.forEach(async (lecture) => {
+              const createdLecture = await this.prisma.lecture.create({
+                data: lecture,
+              });
+              await this.prisma.lectureClassroom.create({
+                data: {
+                  classroomId: classroomId,
+                  lectureId: createdLecture.id,
+                },
+              });
+            });
+          }
         }
       }
 
@@ -163,7 +193,6 @@ export class LectureService {
       }
     }
 
-    // 必要に応じて作成した講義一覧を返す
     return 'ok';
   }
 
