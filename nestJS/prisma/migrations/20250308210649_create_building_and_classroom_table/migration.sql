@@ -9,7 +9,7 @@
   - You are about to drop the column `building` on the `Lecture` table. All the data in the column will be lost.
   - You are about to drop the column `classroom` on the `Lecture` table. All the data in the column will be lost.
   - A unique constraint covering the columns `[name]` on the table `Building` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[academic,school_year,semester,name,weekday,period]` on the table `Lecture` will be added. If there are existing duplicate values, this will fail.
+  - A unique constraint covering the columns `[academic,school_year,semester,class_code,weekday,period]` on the table `Lecture` will be added. If there are existing duplicate values, this will fail.
 
 */
 -- AlterTable
@@ -58,10 +58,10 @@ CREATE UNIQUE INDEX "Classroom_building_id_name_key" ON "Classroom"("building_id
 CREATE UNIQUE INDEX "Building_name_key" ON "Building"("name");
 
 -- CreateIndex
-CREATE INDEX "Lecture_academic_school_year_semester_name_weekday_period_idx" ON "Lecture"("academic", "school_year", "semester", "name", "weekday", "period");
+CREATE INDEX "Lecture_academic_school_year_semester_class_code_weekday_pe_idx" ON "Lecture"("academic", "school_year", "semester", "class_code", "weekday", "period");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Lecture_academic_school_year_semester_name_weekday_period_key" ON "Lecture"("academic", "school_year", "semester", "name", "weekday", "period");
+CREATE UNIQUE INDEX "Lecture_academic_school_year_semester_class_code_weekday_pe_key" ON "Lecture"("academic", "school_year", "semester", "class_code", "weekday", "period");
 
 -- AddForeignKey
 ALTER TABLE "LectureClassroom" ADD CONSTRAINT "LectureClassroom_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "Lecture"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
