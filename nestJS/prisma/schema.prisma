@@ -57,22 +57,25 @@ enum Condition {
 }
 
 model Lecture {
-  id           Int        @id @default(autoincrement()) // ID
-  classCode    Int        @map("class_code")// 授業コード
-  name         String    // 授業名
-  credits      Int        @default(0) // 単位数
-  category     String?    // 科目区分　（例；教養、 基礎専門、専門）
-  field        String?    // 分野　（例：必修、選択必修、 履修指定）
-  syllabus     String?   // シラバス（null許容）
-  teacher      String    // 教員名
-  academic     Academics  // 学部
-  schoolYear   Int        @map("school_year")// 年度
-  semester     Boolean   // 学期　（0：春、1：秋）
-  weekday      Weekday   // 曜日
-  period       Int       // 時限
-  feedbacks    Feedback[] // リレーション: Lecture -> Feedback
-  campus       Campus?    //キャンパス
-  lectureClassRooms LectureClassRoom[] // リレーション: Lecture -> LectureClassRoom
+  id              Int        @id @default(autoincrement())
+  classCode       Int        @map("class_code")
+  name            String
+  credits         Int        @default(0) // 単位数
+  category        String?    // 科目区分　（例；教養、 基礎専門、専門）
+  field           String?
+  syllabus        String?
+  teacher         String
+  academic        Academics
+  schoolYear      Int        @map("school_year")
+  semester        Boolean   // 学期　（0：春、1：秋）
+  weekday         Weekday
+  period          Int
+  feedbacks       Feedback[]
+  campus          Campus?
+  rawClassroom    String?   @map("raw_classrom") // 念のため教室も入れておく
+  classroomId     Int?       @map("classroom_id")
+  classroom       Classroom? @relation(fields: [classroomId], references: [id]) // リレーション: Lecture -> Classroom
+
 
   @@index([schoolYear, semester, weekday, period, academic])
   @@index([schoolYear,semester,weekday,period,campus])
@@ -133,7 +136,7 @@ model Building {
 	campus       Campus // enumのやつ
 	name         String     @unique() // 建物名
   
-  classRooms   Classroom[] // リレーション: Building -> ClassRoom
+  classrooms   Classroom[] // リレーション: Building -> ClassRoom
 }
 
 model Classroom {
@@ -141,20 +144,11 @@ model Classroom {
   buildingId   Int       @map("building_id")// リレーションで参照する建物ID
   name         String    // 教室名
 
-  building     Building @relation(fields: [buildingId], references: [id]) // リレーション: ClassRoom -> Building
-  lectureClassRooms LectureClassRoom[] // リレーション: ClassRoom -> BuildingClassRoom
+  building     Building @relation(fields: [buildingId], references: [id]) // リレーション: Classroom -> Building
+  lectures     Lecture[] // リレーション: Classroom -> Lecture 
 
   @@unique([buildingId, name])
   @@index([buildingId, name])
-}
-
-model LectureClassRoom {
-  id           Int       @id @default(autoincrement()) // ID
-  lectureId    Int       @map("lecture_id")// リレーションで参照する講義ID
-  classRoomId  Int       @map("class_room_id")// リレーションで参照する教室ID
-
-  lecture       Lecture?   @relation(fields: [lectureId], references: [id]) // リレーション: LectureClassRoom -> Lecture
-  classRoom     Classroom? @relation(fields: [classRoomId], references: [id]) // リレーション: LectureClassRoom -> ClassRoom
 }
 
 model ListingItem{

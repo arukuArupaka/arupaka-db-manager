@@ -20,7 +20,9 @@ DROP COLUMN "week_day";
 
 -- AlterTable
 ALTER TABLE "Lecture" DROP COLUMN "building",
-DROP COLUMN "classroom";
+DROP COLUMN "classroom",
+ADD COLUMN     "classroom_id" INTEGER,
+ADD COLUMN     "raw_classrom" TEXT;
 
 -- CreateTable
 CREATE TABLE "Classroom" (
@@ -29,15 +31,6 @@ CREATE TABLE "Classroom" (
     "name" TEXT NOT NULL,
 
     CONSTRAINT "Classroom_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "LectureClassRoom" (
-    "id" SERIAL NOT NULL,
-    "lecture_id" INTEGER NOT NULL,
-    "class_room_id" INTEGER NOT NULL,
-
-    CONSTRAINT "LectureClassRoom_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -50,10 +43,7 @@ CREATE UNIQUE INDEX "Classroom_building_id_name_key" ON "Classroom"("building_id
 CREATE UNIQUE INDEX "Building_name_key" ON "Building"("name");
 
 -- AddForeignKey
+ALTER TABLE "Lecture" ADD CONSTRAINT "Lecture_classroom_id_fkey" FOREIGN KEY ("classroom_id") REFERENCES "Classroom"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Classroom" ADD CONSTRAINT "Classroom_building_id_fkey" FOREIGN KEY ("building_id") REFERENCES "Building"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "LectureClassRoom" ADD CONSTRAINT "LectureClassRoom_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "Lecture"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "LectureClassRoom" ADD CONSTRAINT "LectureClassRoom_class_room_id_fkey" FOREIGN KEY ("class_room_id") REFERENCES "Classroom"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
