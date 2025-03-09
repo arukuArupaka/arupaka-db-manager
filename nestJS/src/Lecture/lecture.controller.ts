@@ -1,18 +1,15 @@
 // src/lecture/lecture.controller.ts
 import { Controller, Get, Query } from '@nestjs/common';
-import { CustomPrismaService } from '../prisma/prisma.service';
 import { LectureService } from './lecture.service';
 import { LecturePayload } from './interface/lecture.payload';
 import { OccupiedClassroomsGetPayload } from './interface/occupied-classrooms-get.payload';
 import { LecturesGetInput } from './interface/lectures-get.input';
 import { OccupiedClassroomsGetInput } from './interface/occupied-classrooms-get.input';
+import { BuildingAndClassroomsGetInput } from './interface/building-and-classrooms-get.input';
 
 @Controller('lecture')
 export class LectureController {
-  constructor(
-    private readonly prisma: CustomPrismaService,
-    private lectureService: LectureService,
-  ) {}
+  constructor(private lectureService: LectureService) {}
 
   @Get('get-lectures')
   async getLecture(
@@ -27,8 +24,8 @@ export class LectureController {
   }
 
   @Get('get-building-and-classrooms')
-  async getBuildingClassrooms(@Query('buildingName') buildingName: string) {
-    return this.lectureService.getBuildingAndClassrooms({ buildingName });
+  async getBuildingClassrooms(@Query() query: BuildingAndClassroomsGetInput) {
+    return this.lectureService.getBuildingAndClassrooms(query);
   }
 
   @Get('get-occupied-classrooms')

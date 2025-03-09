@@ -13,11 +13,13 @@ export class LecturesGetInput {
   @IsOptional()
   @IsString()
   @IsEnum(Academics)
+  @Type(() => String)
   academic?: Academics;
 
   @IsOptional()
   @IsString()
   @IsEnum(Campus)
+  @Type(() => String)
   campus?: Campus;
 
   @IsOptional()
@@ -33,6 +35,7 @@ export class LecturesGetInput {
   @IsOptional()
   @IsString()
   @IsEnum(Weekday)
+  @Type(() => String)
   weekday?: Weekday;
 
   @IsOptional()
@@ -47,9 +50,11 @@ export class LecturesGetInput {
 
   @IsOptional()
   @IsString()
+  @Type(() => String)
   name?: string;
 
   @IsOptional()
   @IsString()
+  @Type(() => String)
   teacher?: string;
 }
