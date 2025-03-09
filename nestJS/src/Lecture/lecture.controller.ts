@@ -2,8 +2,9 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { CustomPrismaService } from '../prisma/prisma.service';
 import { LectureService } from './lecture.service';
-import { Campus, Weekday } from '@prisma/client';
-import { GetAvailableClassroomsPayload } from './interface/get-available-classrooms.payload';
+import { Academics, Campus, Weekday } from '@prisma/client';
+import { LecturePayload } from './interface/lecture.payload';
+import { OccupiedClassroomsGetPayload } from './interface/occupied-classrooms-get.payload';
 
 @Controller('lecture')
 export class LectureController {
@@ -12,34 +13,53 @@ export class LectureController {
     private lectureService: LectureService,
   ) {}
 
-  // 実験用のエンドポイント
-  @Get('get_lectures')
-  async getLecture() {
-    return await this.prisma.lecture.findMany();
+  @Get('get-lectures')
+  async getLecture(
+    @Query('classCode') classCode: number,
+    @Query('schoolYear') schoolYear: number,
+    @Query('semester') semester: boolean,
+    @Query('weekday') weekday: Weekday,
+    @Query('period') period: number,
+    @Query('campus') campus: Campus,
+    @Query('academic') academic: Academics,
+    @Query('teacher') teacher: string,
+    @Query('name') name: string,
+  ): Promise<LecturePayload[]> {
+    return await this.lectureService.getLectures({
+      academic,
+      campus,
+      schoolYear,
+      semester,
+      weekday,
+      period,
+      classCode,
+      name,
+      teacher,
+    });
   }
 
-  @Get('load-lecture')
+  @Get('load-lectures')
   async loadLecture() {
-    return this.lectureService.loadLecture();
+    return this.lectureService.loadLectures();
   }
 
-  @Get('get-building-classrooms')
-  async getBuildingClassrooms(@Query('name') name: string) {
-    return this.lectureService.getBuildingClassrooms({ name });
+  @Get('get-building-and-classrooms')
+  async getBuildingClassrooms(@Query('buildingName') buildingName: string) {
+    return this.lectureService.getBuildingAndClassrooms({ buildingName });
   }
 
-  @Get('get-available-classrooms')
+  @Get('get-occupied-classrooms')
   /*エンドポイントを叩く際、正しい形式で入力するように注意してください
     以下の引数の型注釈を参考にしてください。(特にCampusやWeekdayなどは)
      */
-  async getUnavailableClassRooms(
+  async getOccupiedClassrooms(
     @Query('campus') campus: Campus,
     @Query('schoolYear') schoolYear: number,
     @Query('semester') semester: boolean,
     @Query('weekday') weekday: Weekday,
     @Query('period') period: number,
-  ): Promise<GetAvailableClassroomsPayload[]> {
-    return this.lectureService.getAvailableClassrooms({
+  ): Promise<OccupiedClassroomsGetPayload[]> {
+    return this.lectureService.getOccupiedClassrooms({
       campus,
       schoolYear,
       semester,
@@ -48,6 +68,20 @@ export class LectureController {
     });
   }
 
+  /**
+   * 以下のエンドポイントは、全ての講義情報が入っているJSONファイルを読み込み、
+   * それらすべての講義の授業コードをもとに、データベースでfindManyを行い、
+   * 本来存在するはずのデータがデータベースに存在しない場合、その授業コードを返します。
+   */
+  @Get('check-all-lectures')
+  async checkAllLectures() {
+    return this.lectureService.checkAllLectures();
+  }
+
+  /**
+   * 基本的にはテスト用です。
+   * 建物、教室、中間テーブル、講義のデータを全て削除します。
+   */
   @Get('delete-lectures')
   async deleteLectures() {
     await this.prisma.lectureClassroom.deleteMany({});

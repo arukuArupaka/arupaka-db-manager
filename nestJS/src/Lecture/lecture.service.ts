@@ -6,10 +6,14 @@ import { BKCBuildings } from './classroom/bkc-buildings';
 import { OICBuildings } from './classroom/oic-buildings';
 import { KICBuildings } from './classroom/kic-buildings';
 import { Campus } from '@prisma/client';
-import { GetAvailableClassroomsInput } from './interface/get-available-classrooms.input';
-import { GetAvailableClassroomsPayload } from './interface/get-available-classrooms.payload';
 import { LectureCreatePayload } from './interface/lecture-create.payload';
-import { getBuildingClassroomsInput } from './interface/get-building-classrooms.input';
+import { UpsertLectureInput } from './interface/lecture-upsert.input';
+import { LecturesGetInput } from './interface/lectures-get.input';
+import { LecturePayload } from './interface/lecture.payload';
+import { convertFullwidthDigitsToHalfwidth } from '../common/convertFullwidthDigitsToHalfwidth';
+import { OccupiedClassroomsGetInput } from './interface/occupied-classrooms-get.input';
+import { OccupiedClassroomsGetPayload } from './interface/occupied-classrooms-get.payload';
+import { BuildingAndClassroomsGetInput } from './interface/building-and-classrooms-get.input';
 
 @Injectable()
 export class LectureService {
@@ -43,7 +47,8 @@ export class LectureService {
         // 同じ建物名が複数回出現しても処理
         matches.forEach((building) => {
           const room = roomStr.replace(building, '').trim();
-          BKCClassrooms[building].push(room);
+          const convertedRoom = convertFullwidthDigitsToHalfwidth(room);
+          BKCClassrooms[building].push(convertedRoom);
         });
       }
       // OIC 用
@@ -51,7 +56,8 @@ export class LectureService {
       if (matches) {
         matches.forEach((building) => {
           const room = roomStr.replace(building, '').trim();
-          OICClassrooms[building].push(room);
+          const convertedRoom = convertFullwidthDigitsToHalfwidth(room);
+          OICClassrooms[building].push(convertedRoom);
         });
       }
       // KIC 用
@@ -59,7 +65,8 @@ export class LectureService {
       if (matches) {
         matches.forEach((building) => {
           const room = roomStr.replace(building, '').trim();
-          KICClassrooms[building].push(room);
+          const convertedRoom = convertFullwidthDigitsToHalfwidth(room);
+          KICClassrooms[building].push(convertedRoom);
         });
       }
 
@@ -77,7 +84,74 @@ export class LectureService {
     };
   }
 
-  async loadLecture() {
+  /**
+   * lectureの一括登録処理
+   * @param props
+   */
+  async upsertLecture(props: UpsertLectureInput) {
+    const insertionPromises = [];
+    // まず、各 mapping を集約する配列を用意
+    const lectureClassroomMappings: {
+      classroomId: number;
+      lectureId: number;
+    }[] = [];
+
+    // 各教室ごとに登録処理を行う
+    for (const [
+      classroomId,
+      lectures,
+    ] of props.classroomIdLectureMap.entries()) {
+      for (const lecture of lectures) {
+        const lectureUniqueKey = `${lecture.schoolYear}-${lecture.academic}-${lecture.semester}-${lecture.classCode}`;
+        let upsertPromise = props.lectureUpsertCache.get(lectureUniqueKey);
+        // upsert処理自体を配列に格納しておく（Promise.all でまとめて処理）
+        if (!upsertPromise) {
+          upsertPromise = this.prisma.lecture.upsert({
+            where: {
+              academic_schoolYear_semester_classCode_weekday_period: {
+                schoolYear: lecture.schoolYear,
+                academic: lecture.academic,
+                semester: lecture.semester,
+                classCode: lecture.classCode,
+                weekday: lecture.weekday,
+                period: lecture.period,
+              },
+            },
+            update: {},
+            create: lecture,
+          });
+          props.lectureUpsertCache.set(lectureUniqueKey, upsertPromise);
+        }
+        // 各 upsert の完了後に mapping 情報を配列に追加
+        insertionPromises.push(
+          upsertPromise.then((createdLecture) => {
+            lectureClassroomMappings.push({
+              classroomId,
+              lectureId: createdLecture.id,
+            });
+          }),
+        );
+      }
+    }
+
+    await Promise.all(insertionPromises);
+
+    // すべての mapping を一括挿入（skipDuplicates オプションを利用）
+    await this.prisma.lectureClassroom.createMany({
+      data: lectureClassroomMappings,
+      skipDuplicates: true, // 重複している場合はスキップ
+    });
+
+    await Promise.all(insertionPromises);
+    // バッチ処理済みの Map はクリアしてメモリ解放
+    props.classroomIdLectureMap.clear();
+  }
+
+  /**
+   * 時間割JSONデータを読み込んでDBに登録
+   * @returns
+   */
+  async loadLectures() {
     // キャッシュをMapで管理する（より高速なキー検索とループ制御が可能）
     const buildingCache = new Map<string, { id: number; campus: string }>();
     const classroomCache = new Map<string, number>();
@@ -87,7 +161,7 @@ export class LectureService {
     // 講義の重複 upsert を避けるためのキャッシュ
     const lectureUpsertCache = new Map<string, Promise<any>>();
 
-    // バッチサイズ（教室ごとの講義登録件数で判定）
+    // バッチサイズ
     const BATCH_SIZE = 100;
     // 講義の一括登録用バッチ（Otherキャンパスなど）
     let lectureBatch: LectureCreatePayload[] = [];
@@ -96,7 +170,6 @@ export class LectureService {
       const filePath = path.join(__dirname, 'lecture-data', `2025-${i}.json`);
       const jsonData = fs.readFileSync(filePath, 'utf8');
       const data = JSON.parse(jsonData);
-      console.log(data.length);
 
       // 各講義の逐次処理
       for (const el of data) {
@@ -178,77 +251,34 @@ export class LectureService {
 
         // 教室ごとの講義が一定件数に達したら、一括DB挿入
         if (classroomIdLectureMap.size >= BATCH_SIZE) {
-          const insertionPromises = [];
-          // まず、各 mapping を集約する配列を用意
-          const lectureClassroomMappings: {
-            classroomId: number;
-            lectureId: number;
-          }[] = [];
-
-          // 各教室ごとに登録処理を行う
-          for (const [
-            classroomId,
-            lectures,
-          ] of classroomIdLectureMap.entries()) {
-            for (const lecture of lectures) {
-              const lectureUniqueKey = `${lecture.schoolYear}-${lecture.academic}-${lecture.semester}-${lecture.name}`;
-              let upsertPromise = lectureUpsertCache.get(lectureUniqueKey);
-              if (!upsertPromise) {
-                upsertPromise = this.prisma.lecture.upsert({
-                  where: {
-                    academic_schoolYear_semester_name_weekday_period: {
-                      schoolYear: lecture.schoolYear,
-                      academic: lecture.academic,
-                      semester: lecture.semester,
-                      name: lecture.name,
-                      weekday: lecture.weekday,
-                      period: lecture.period,
-                    },
-                  },
-                  update: {},
-                  create: lecture,
-                });
-                lectureUpsertCache.set(lectureUniqueKey, upsertPromise);
-              }
-              // 各 upsert の完了後に mapping 情報を配列に追加
-              insertionPromises.push(
-                upsertPromise.then((createdLecture) => {
-                  lectureClassroomMappings.push({
-                    classroomId,
-                    lectureId: createdLecture.id,
-                  });
-                }),
-              );
-            }
-          }
-
-          await Promise.all(insertionPromises);
-
-          // すべての mapping を一括挿入（skipDuplicates オプションを利用）
-          await this.prisma.lectureClassroom.createMany({
-            data: lectureClassroomMappings,
-            skipDuplicates: true, // 重複している場合はスキップ
+          await this.upsertLecture({
+            classroomIdLectureMap,
+            lectureUpsertCache,
           });
-
-          await Promise.all(insertionPromises);
-          // バッチ処理済みの Map はクリアしてメモリ解放
-          classroomIdLectureMap.clear();
         }
       }
 
-      // ファイル単位で残った講義を挿入（lectureBatch の場合）
+      // バッチ処理で残った講義を一括登録
+      if (classroomIdLectureMap.size > 0) {
+        await this.upsertLecture({
+          classroomIdLectureMap,
+          lectureUpsertCache,
+        });
+      }
+
+      // other キャンパスの講義を一括登録
       if (lectureBatch.length > 0) {
-        // 講義のユニークなキーでデデュプリケーション
+        // キャッシュマップを使って重複を排除
         const uniqueLectureMap = new Map<string, LectureCreatePayload>();
         lectureBatch.forEach((lecture) => {
-          const key = `${lecture.schoolYear}-${lecture.academic}-${lecture.semester}-${lecture.name}`;
+          const key = `${lecture.schoolYear}-${lecture.academic}-${lecture.semester}-${lecture.classCode}-${lecture.weekday}-${lecture.period}`;
           if (!uniqueLectureMap.has(key)) {
             uniqueLectureMap.set(key, lecture);
           }
         });
         const uniqueLectureBatch = Array.from(uniqueLectureMap.values());
 
-        // skipDuplicates オプションも併用（Prisma が対応している場合）
+        // skipDuplicatesを使用して重複していたらスキップ
         await this.prisma.lecture.createMany({
           data: uniqueLectureBatch,
           skipDuplicates: true,
@@ -256,17 +286,71 @@ export class LectureService {
         lectureBatch = [];
       }
     }
+
     return 'ok';
   }
 
-  async getAvailableClassrooms(
-    input: GetAvailableClassroomsInput,
-  ): Promise<GetAvailableClassroomsPayload[]> {
-    // 「教室名」をキーとして、講義情報（GetAvailableClassroomsPayload）を保持するMap
-    const classroomLectureMap = new Map<
-      string,
-      GetAvailableClassroomsPayload
-    >();
+  private chunkArray(array: any[], chunkSize = 100) {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
+  }
+
+  async checkAllLectures() {
+    const diffArray = [];
+    for (let i = 1; i < 4; i++) {
+      const filePath = path.join(__dirname, 'lecture-data', `2025-${i}.json`);
+      const jsonData = fs.readFileSync(filePath, 'utf8');
+      const data = JSON.parse(jsonData);
+      const splitedArray = this.chunkArray(
+        data.map((el) => el.fields.classCode),
+      );
+
+      await Promise.all(
+        splitedArray.map(async (arr) => {
+          const lectures = await this.prisma.lecture.findMany({
+            where: {
+              classCode: {
+                in: arr,
+              },
+            },
+            select: {
+              classCode: true,
+            },
+          });
+          const lectureCodes = lectures.map((l) => l.classCode);
+          diffArray.push(
+            ...new Set(arr.filter((code) => !lectureCodes.includes(code))),
+          );
+        }),
+      );
+    }
+    return diffArray;
+  }
+
+  async getLectures(input: LecturesGetInput): Promise<LecturePayload[]> {
+    return this.prisma.lecture.findMany({
+      where: {
+        ...(input.academic && { academic: input.academic }),
+        ...(input.campus && { campus: input.campus }),
+        ...(input.schoolYear && { schoolYear: input.schoolYear }),
+        ...(input.semester && { semester: input.semester }),
+        ...(input.weekday && { weekday: input.weekday }),
+        ...(input.period && { period: input.period }),
+        ...(input.classCode && { classCode: input.classCode }),
+        ...(input.name && { name: input.name }),
+        ...(input.teacher && { teacher: input.teacher }),
+      },
+    });
+  }
+
+  async getOccupiedClassrooms(
+    input: OccupiedClassroomsGetInput,
+  ): Promise<OccupiedClassroomsGetPayload[]> {
+    // 「教室名」をキーとして、講義情報（OccupiedClassroomsGetPayload）を保持するMap
+    const classroomLectureMap = new Map<string, OccupiedClassroomsGetPayload>();
 
     // 建物とその教室を取得（必要な情報だけselect）
     const buildings = await this.prisma.building.findMany({
@@ -337,20 +421,22 @@ export class LectureService {
             building: building.name,
             classroom: classroom.name,
             isUsed: false,
-          } as GetAvailableClassroomsPayload;
+          } as OccupiedClassroomsGetPayload;
         }
         // もし Map にあれば、その講義情報を返す
         return lecture;
       }),
     );
 
-    return availableClassrooms;
+    availableClassrooms.sort((a, b) => a.classroom.localeCompare(b.classroom));
+
+    return [...new Set(availableClassrooms)];
   }
 
-  async getBuildingClassrooms(input: getBuildingClassroomsInput) {
-    const buildings = await this.prisma.building.findUnique({
+  async getBuildingAndClassrooms(input: BuildingAndClassroomsGetInput) {
+    const building = await this.prisma.building.findUnique({
       where: {
-        name: input.name,
+        name: input.buildingName,
       },
       select: {
         name: true,
@@ -362,6 +448,8 @@ export class LectureService {
       },
     });
 
-    return buildings;
+    building.classrooms.sort((a, b) => a.name.localeCompare(b.name));
+
+    return building.classrooms;
   }
 }

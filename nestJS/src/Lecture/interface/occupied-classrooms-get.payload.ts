@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-export type GetAvailableClassroomsPayload = {
+export type OccupiedClassroomsGetPayload = {
   name?: string;
   building: string;
   classroom: string;
