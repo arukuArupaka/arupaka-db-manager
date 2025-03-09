@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { CustomPrismaService } from 'src/prisma/prisma.service';
 import * as fs from 'fs';
@@ -14,10 +15,44 @@ import { convertFullwidthDigitsToHalfwidth } from '../common/convertFullwidthDig
 import { OccupiedClassroomsGetInput } from './interface/occupied-classrooms-get.input';
 import { OccupiedClassroomsGetPayload } from './interface/occupied-classrooms-get.payload';
 import { BuildingAndClassroomsGetInput } from './interface/building-and-classrooms-get.input';
+import { removeJapanese } from '../common/remove-japanese';
+import { LectureGetByClassroomInput } from './interface/lecture-get-by-classroom.input';
 
 @Injectable()
 export class LectureService {
   constructor(private readonly prisma: CustomPrismaService) {}
+
+  /**
+   * 教室名を読みやすく変換するメソッド（例：コラーニングⅠ101号室 → C101）
+   * @param classroom
+   * @param campus
+   * @param building
+   * @returns
+   */
+  private formatClassroomName(
+    classroom: string,
+    campus: Campus,
+    building: string,
+  ) {
+    if (campus === 'BKC') {
+      if (building === 'コラーニングⅠ' || building === 'コラーニングⅡ') {
+        return `C${removeJapanese(classroom)}`;
+      }
+      if (building === 'フォレストハウス') {
+        return `F${removeJapanese(classroom)}`;
+      }
+      if (building === 'プリズムハウス') {
+        return `P${removeJapanese(classroom)}`;
+      }
+      if (building === 'アドセミナリオ') {
+        return `A${removeJapanese(classroom)}`;
+      }
+    }
+    if (campus === 'OIC') {
+      return `${removeJapanese(classroom)}`;
+    }
+    return removeJapanese(classroom);
+  }
 
   private splitClassroom(classroom: string) {
     // 各キャンパスごとに、建物名をキー、教室名の配列を値とするオブジェクト
@@ -41,6 +76,12 @@ export class LectureService {
     const splitted = classroom.split('/');
 
     for (const roomStr of splitted) {
+      // 教室名にBKCを含む場合、OICのB棟とご認識されるので早期リターン
+      if (roomStr.includes('BKC')) {
+        OtherClassrooms['Other'].push(roomStr);
+        continue;
+      }
+
       // BKC 用
       let matches = roomStr.match(regexBKC);
       if (matches) {
@@ -48,7 +89,12 @@ export class LectureService {
         matches.forEach((building) => {
           const room = roomStr.replace(building, '').trim();
           const convertedRoom = convertFullwidthDigitsToHalfwidth(room);
-          BKCClassrooms[building].push(convertedRoom);
+          const formattedRoom = this.formatClassroomName(
+            convertedRoom,
+            'BKC',
+            building,
+          );
+          BKCClassrooms[building].push(formattedRoom);
         });
       }
       // OIC 用
@@ -57,7 +103,12 @@ export class LectureService {
         matches.forEach((building) => {
           const room = roomStr.trim();
           const convertedRoom = convertFullwidthDigitsToHalfwidth(room);
-          OICClassrooms[building].push(convertedRoom);
+          const formattedRoom = this.formatClassroomName(
+            convertedRoom,
+            'OIC',
+            building,
+          );
+          OICClassrooms[building].push(formattedRoom);
         });
       }
       // KIC 用
@@ -66,7 +117,12 @@ export class LectureService {
         matches.forEach((building) => {
           const room = roomStr.replace(building, '').trim();
           const convertedRoom = convertFullwidthDigitsToHalfwidth(room);
-          KICClassrooms[building].push(convertedRoom);
+          const formattedRoom = this.formatClassroomName(
+            convertedRoom,
+            'KIC',
+            building,
+          );
+          KICClassrooms[building].push(formattedRoom);
         });
       }
 
@@ -457,6 +513,18 @@ export class LectureService {
     building.classrooms.sort((a, b) => a.name.localeCompare(b.name));
 
     return building.classrooms;
+  }
+
+  async getLectureByClassroom(query: LectureGetByClassroomInput) {
+    const lectures = await this.prisma.lectureClassroom.findMany({
+      where: {
+        classroomId: Number(query.classroomId),
+      },
+      select: {
+        lecture: true,
+      },
+    });
+    return lectures;
   }
 
   async deleteLectures(): Promise<number> {

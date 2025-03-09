@@ -6,6 +6,7 @@ import { OccupiedClassroomsGetPayload } from './interface/occupied-classrooms-ge
 import { LecturesGetInput } from './interface/lectures-get.input';
 import { OccupiedClassroomsGetInput } from './interface/occupied-classrooms-get.input';
 import { BuildingAndClassroomsGetInput } from './interface/building-and-classrooms-get.input';
+import { LectureGetByClassroomInput } from './interface/lecture-get-by-classroom.input';
 
 @Controller('lecture')
 export class LectureController {
@@ -26,6 +27,11 @@ export class LectureController {
   @Get('get-building-and-classrooms')
   async getBuildingClassrooms(@Query() query: BuildingAndClassroomsGetInput) {
     return this.lectureService.getBuildingAndClassrooms(query);
+  }
+
+  @Get('get-lectures-by-classroom')
+  async getLectureByClassroom(@Query() query: LectureGetByClassroomInput) {
+    return this.lectureService.getLectureByClassroom(query);
   }
 
   @Get('get-occupied-classrooms')
