@@ -330,6 +330,12 @@ export class LectureService {
     return diffArray;
   }
 
+  /**
+   * 条件付きで講義情報を取得
+   * 全てオプショナルなため、フロントから柔軟に検索可能
+   * @param input LecturesGetInput
+   * @returns LecturePayload[]
+   */
   async getLectures(input: LecturesGetInput): Promise<LecturePayload[]> {
     return this.prisma.lecture.findMany({
       where: {
@@ -428,7 +434,9 @@ export class LectureService {
       }),
     );
 
-    availableClassrooms.sort((a, b) => a.classroom.localeCompare(b.classroom));
+    availableClassrooms.sort((a, b) =>
+      a.classroom.localeCompare(`${b.building}${b.classroom}`),
+    );
 
     return [...new Set(availableClassrooms)];
   }
@@ -451,5 +459,13 @@ export class LectureService {
     building.classrooms.sort((a, b) => a.name.localeCompare(b.name));
 
     return building.classrooms;
+  }
+
+  async deleteLectures(): Promise<number> {
+    await this.prisma.lectureClassroom.deleteMany({});
+    await this.prisma.classroom.deleteMany({});
+    await this.prisma.building.deleteMany({});
+    const countLecture = await this.prisma.lecture.deleteMany({});
+    return countLecture.count;
   }
 }

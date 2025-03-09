@@ -2,9 +2,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { CustomPrismaService } from '../prisma/prisma.service';
 import { LectureService } from './lecture.service';
-import { Academics, Campus, Weekday } from '@prisma/client';
 import { LecturePayload } from './interface/lecture.payload';
 import { OccupiedClassroomsGetPayload } from './interface/occupied-classrooms-get.payload';
+import { LecturesGetInput } from './interface/lectures-get.input';
+import { OccupiedClassroomsGetInput } from './interface/occupied-classrooms-get.input';
 
 @Controller('lecture')
 export class LectureController {
@@ -15,27 +16,9 @@ export class LectureController {
 
   @Get('get-lectures')
   async getLecture(
-    @Query('classCode') classCode: number,
-    @Query('schoolYear') schoolYear: number,
-    @Query('semester') semester: boolean,
-    @Query('weekday') weekday: Weekday,
-    @Query('period') period: number,
-    @Query('campus') campus: Campus,
-    @Query('academic') academic: Academics,
-    @Query('teacher') teacher: string,
-    @Query('name') name: string,
+    @Query() query: LecturesGetInput,
   ): Promise<LecturePayload[]> {
-    return await this.lectureService.getLectures({
-      academic,
-      campus,
-      schoolYear,
-      semester,
-      weekday,
-      period,
-      classCode,
-      name,
-      teacher,
-    });
+    return await this.lectureService.getLectures(query);
   }
 
   @Get('load-lectures')
@@ -53,19 +36,9 @@ export class LectureController {
     以下の引数の型注釈を参考にしてください。(特にCampusやWeekdayなどは)
      */
   async getOccupiedClassrooms(
-    @Query('campus') campus: Campus,
-    @Query('schoolYear') schoolYear: number,
-    @Query('semester') semester: boolean,
-    @Query('weekday') weekday: Weekday,
-    @Query('period') period: number,
+    @Query() query: OccupiedClassroomsGetInput,
   ): Promise<OccupiedClassroomsGetPayload[]> {
-    return this.lectureService.getOccupiedClassrooms({
-      campus,
-      schoolYear,
-      semester,
-      weekday,
-      period,
-    });
+    return this.lectureService.getOccupiedClassrooms(query);
   }
 
   /**
@@ -83,11 +56,7 @@ export class LectureController {
    * 建物、教室、中間テーブル、講義のデータを全て削除します。
    */
   @Get('delete-lectures')
-  async deleteLectures() {
-    await this.prisma.lectureClassroom.deleteMany({});
-    await this.prisma.classroom.deleteMany({});
-    await this.prisma.building.deleteMany({});
-    const countLecture = await this.prisma.lecture.deleteMany({});
-    return countLecture;
+  async deleteLectures(): Promise<number> {
+    return this.lectureService.deleteLectures();
   }
 }
