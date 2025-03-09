@@ -55,7 +55,7 @@ export class LectureService {
       matches = roomStr.match(regexOIC);
       if (matches) {
         matches.forEach((building) => {
-          const room = roomStr.replace(building, '').trim();
+          const room = roomStr.trim();
           const convertedRoom = convertFullwidthDigitsToHalfwidth(room);
           OICClassrooms[building].push(convertedRoom);
         });
@@ -434,9 +434,7 @@ export class LectureService {
       }),
     );
 
-    availableClassrooms.sort((a, b) =>
-      a.classroom.localeCompare(`${b.building}${b.classroom}`),
-    );
+    availableClassrooms.sort((a, b) => a.classroom.localeCompare(b.classroom));
 
     return [...new Set(availableClassrooms)];
   }
