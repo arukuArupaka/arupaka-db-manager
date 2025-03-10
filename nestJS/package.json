@@ -18,6 +18,7 @@
     "docker:command": "docker exec -it nestjs sh",
     "makemigration": "npx prisma migrate dev",
     "migrate": "prisma migrate deploy",
+    "generate": "npm run prisma:generate",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",

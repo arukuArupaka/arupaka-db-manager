@@ -1,12 +1,13 @@
-version: "3.8"
+version: '3.8'
 
 services:
   postgres:
     image: postgres:14
     container_name: postgres
     ports:
-      - "5433:5432"
+      - '5433:5432'
     environment:
       POSTGRES_USER: arupaka
       POSTGRES_PASSWORD: arupaka
       POSTGRES_DB: arupaka_db_manager
+      POSTGRES_HOST_AUTH_METHOD: trust
