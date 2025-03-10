@@ -225,31 +225,64 @@ async def web_search():
                             element_campus = tree.xpath(xpath_campus)
 
                             if element_kamoku:
+                                kamoku = element_kamoku[0].text_content()
                                 if element_campus:
                                     campus_text = element_campus[0].text_content()
-                                    # "/" が含まれている場合のみ、分割して後半を取得
-                                    if "/" in campus_text:
-                                        split_text = campus_text.split('/', 1)
-                                        campus_raw = split_text[1] if len(split_text) > 1 else split_text[0]
-                                    else:
-                                        campus_raw = campus_text
+                                    # "/" で分割し、最後の要素を取得する
+                                    campus_raw = campus_text.split('/')[-1].strip() if '/' in campus_text else campus_text
                                 else:
                                     campus_raw = "None"
+
                                 campus_name = campus_translation.get(campus_raw, "None")
-                                data = {
-                                    "academic": department_adjust(d),
-                                    "classCode": element_kamoku[0].text_content().split(':', 1)[0], 
-                                    "name": element_kamoku[0].text_content().split(':', 1)[1], 
-                                    "syllabus": "https://ct.ritsumei.ac.jp" + element_kamoku[0].get('href'), 
-                                    "teacher": element_teacher[0].text_content(),
-                                    "credits": element_credits[0].text_content(),
-                                    "weekday": element_daytime[0].text_content()[0] if element_daytime else "不明",
-                                    "period": element_daytime[0].text_content()[1:] if element_daytime else "不明",
-                                    "classroom": await get_classroom_info("https://ct.ritsumei.ac.jp" + element_kamoku[0].get('href')),
-                                    "schoolYear": element_schoolYear[0].text_content(),
-                                    "campus": campus_name,
-                                }
-                                await save_kamoku_data(data, semester) 
+                                
+                                # '§' が含まれているか確認
+                                if '§' in kamoku:
+                                    # '§' で分割
+                                    kamoku_parts = kamoku.split('§')
+                                    for part in kamoku_parts:
+                                        part = part.strip()  # 前後の空白を除去
+
+                                        # ':' で分割して授業コードと授業名を取得
+                                        if ':' in part:
+                                            class_code, class_name = part.split(':', 1)
+                                        else:
+                                            class_code = "不明"  # 授業コードがない場合は "不明" とする
+                                            class_name = part
+
+                                        data = {
+                                            "academic": department_adjust(d),
+                                            "classCode": class_code.strip(), 
+                                            "name": class_name.strip(),
+                                            "syllabus": "https://ct.ritsumei.ac.jp" + element_kamoku[0].get('href'), 
+                                            "teacher": element_teacher[0].text_content(),
+                                            "credits": element_credits[0].text_content(),
+                                            "weekday": element_daytime[0].text_content()[0] if element_daytime else "不明",
+                                            "period": element_daytime[0].text_content()[1:] if element_daytime else "不明",
+                                            "classroom": await get_classroom_info("https://ct.ritsumei.ac.jp" + element_kamoku[0].get('href')),
+                                            "schoolYear": element_schoolYear[0].text_content(),
+                                            "campus": campus_name,
+                                        }
+                                        await save_kamoku_data(data, semester)
+                                else:
+                                    # '§' が含まれていない場合、そのまま処理
+                                    class_code = kamoku.split(':', 1)[0]
+                                    class_name = kamoku.split(':', 1)[1] if ':' in kamoku else "不明"
+
+                                    data = {
+                                        "academic": department_adjust(d),
+                                        "classCode": class_code.strip(), 
+                                        "name": class_name.strip(),
+                                        "syllabus": "https://ct.ritsumei.ac.jp" + element_kamoku[0].get('href'), 
+                                        "teacher": element_teacher[0].text_content(),
+                                        "credits": element_credits[0].text_content(),
+                                        "weekday": element_daytime[0].text_content()[0] if element_daytime else "不明",
+                                        "period": element_daytime[0].text_content()[1:] if element_daytime else "不明",
+                                        "classroom": await get_classroom_info("https://ct.ritsumei.ac.jp" + element_kamoku[0].get('href')),
+                                        "schoolYear": element_schoolYear[0].text_content(),
+                                        "campus": campus_name,
+                                    }
+                                    await save_kamoku_data(data, semester)
+
 
                         try:
                             next_button = WebDriverWait(driver, 5).until(
