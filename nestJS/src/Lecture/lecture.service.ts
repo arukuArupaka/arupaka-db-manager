@@ -242,7 +242,7 @@ export class LectureService {
           semester: Boolean(el.fields.semester),
           weekday: el.fields.weekday,
           period: el.fields.period,
-          campus: el.fields.campus === '不明' ? 'OIC' : el.fields.campus,
+          campus: el.fields.campus !== 'None' ? el.fields.campus : undefined,
           rawClassroom: el.fields.classroom,
         };
 
