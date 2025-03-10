@@ -20,8 +20,8 @@ enum Campus {
 
 enum Weekday {
   Monday   
-  Tuesday   
-  Wednesday  
+  Tuseday   
+  Wednsday 
   Thursday  
   Friday    
   Saturday  
@@ -74,6 +74,7 @@ model Lecture {
   period       Int       // 時限
   feedbacks    Feedback[] // リレーション: Lecture -> Feedback
 
+  @@unique([classCode, academic, name])
   @@index([schoolYear, semester, weekday, period, academic])
   @@index ([name, teacher])  // 複合キー
 }
