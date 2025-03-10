@@ -11,15 +11,9 @@ import {
   Min,
 } from 'class-validator';
 
-export class ListingItemPayload {
+export class ListingItemCreateInput {
   @IsString()
   documentId: string; //FirebaseにおけるID
-  @IsOptional()
-  @IsDate()
-  purchasedAt?: Date; //購入した日時
-  @IsOptional()
-  @IsString()
-  purchasedUserId?: string; //購入したユーザーのid
   @IsEnum(Condition)
   condition: Condition; //商品の状態
   @IsEnum(Academics)
@@ -39,8 +33,4 @@ export class ListingItemPayload {
   name: string; //商品
   @IsString()
   firebaseUserId: string; //ユーザーID
-  @IsInt()
-  id: number; //ID
-  @IsDate()
-  createdAt: Date; //出品された日時
 }
