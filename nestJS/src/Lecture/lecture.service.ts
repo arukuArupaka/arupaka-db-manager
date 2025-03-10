@@ -474,7 +474,7 @@ export class LectureService {
     // 建物一覧から利用可能な教室の配列を作成
     // ここでは各建物の各教室について、Map に登録された講義情報があれば使用中(true)、
     // なければ利用可能(false)として返します
-    const availableClassrooms = buildings.flatMap((building) =>
+    const occupiedClassrooms = buildings.flatMap((building) =>
       building.classrooms.map((classroom) => {
         // Mapからキー（ここでは教室名）で情報を取得
         const lecture = classroomLectureMap.get(classroom.name);
@@ -490,9 +490,9 @@ export class LectureService {
       }),
     );
 
-    availableClassrooms.sort((a, b) => a.classroom.localeCompare(b.classroom));
+    occupiedClassrooms.sort((a, b) => a.classroom.localeCompare(b.classroom));
 
-    return [...new Set(availableClassrooms)];
+    return [...new Set(occupiedClassrooms)];
   }
 
   async getBuildingAndClassrooms(input: BuildingAndClassroomsGetInput) {
