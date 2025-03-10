@@ -1,19 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   ListingItemPayload,
-  ListingItemInput,
 } from './interface/listing-item.payload';
 import { CustomPrismaService } from 'src/prisma/prisma.service';
 import { validateValue } from 'src/common/validate-value';
+import { ListingItemSearchInput } from './interface/listingitem-search.input';
+import { ListingItemCreateInput } from './interface/listing-item-create.input';
 
 @Injectable()
 export class SearchItemService {
   constructor(private readonly prisma: CustomPrismaService) {}
 
-  async findItems(searchWord: string): Promise<ListingItemPayload[]> {
+  async searchItems(query: ListingItemSearchInput): Promise<ListingItemPayload[]> {
     const items = await this.prisma.listingItem.findMany({
       where: {
-        name: { contains: searchWord },
+        name: { contains: query.name },
       },
       //全部select(imageurl含め)
       select:{
@@ -47,9 +48,19 @@ export class SearchItemService {
     return newItems;
   }
 
-  async ItemCreate(createItem: ListingItemInput): Promise<string> {
+  async createItem(createItem:ListingItemCreateInput): Promise<string> {
+    const imageUrls = await this.prisma.imageUrl.findMany({
+      where:{
+        url:{
+          in:createItem.imageUrls
+        }
+      }
+    });
+    if (imageUrls.length > 0){
+      throw new BadRequestException();
+    }
     const adjustedCreateItem = {
-      //余計なプロパティの削除
+      //image配列をimageテーブルのオブジェクトの配列に変更
       documentId: createItem.documentId,
       condition: createItem.condition,
       department: createItem.department,
@@ -60,10 +71,8 @@ export class SearchItemService {
       create:createItem.imageUrls.map((imageUrl)=>({url:imageUrl}))
       } 
     }
-    await this.prisma.listingItem.upsert({
-      where: { documentId: adjustedCreateItem.documentId },
-      update: adjustedCreateItem,
-      create:adjustedCreateItem,
+    await this.prisma.listingItem.create({
+      data:adjustedCreateItem,
     });
     return 'OK';
   }

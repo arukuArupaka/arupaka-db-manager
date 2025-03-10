@@ -2,22 +2,23 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { SearchItemService } from './listing-item.service';
 import {
   ListingItemPayload,
-  ListingItemInput,
 } from './interface/listing-item.payload';
+import { ListingItemSearchInput } from './interface/listingitem-search.input';
+import { ListingItemCreateInput } from './interface/listing-item-create.input';
 
 @Controller('listing_item')
 export class SearchItemController {
   constructor(private searchItemService: SearchItemService) {}
 
   @Get('search_item')
-  async getItems(@Query('name') name: string):Promise<ListingItemPayload[]> {
-    return this.searchItemService.findItems(name);
+  async searchItems(@Query() query:ListingItemSearchInput):Promise<ListingItemPayload[]> {
+    return this.searchItemService.searchItems(query);
   }
 
   @Post('create_item')
-  async CreateItem(
-    @Body() createItem: ListingItemInput,
+  async createItem(
+    @Body() createItem:ListingItemCreateInput,
   ): Promise<string> {
-    return this.searchItemService.ItemCreate(createItem);
+    return this.searchItemService.createItem(createItem);
   }
 }
