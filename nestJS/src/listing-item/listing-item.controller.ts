@@ -2,9 +2,8 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { SearchItemService } from './listing-item.service';
 import {
   ListingItemPayload,
-  RecievedListingItemPayload,
+  ListingItemInput,
 } from './interface/listing-item.payload';
-import { ValidationError } from 'class-validator';
 
 @Controller('listing_item')
 export class SearchItemController {
@@ -17,7 +16,7 @@ export class SearchItemController {
 
   @Post('create_item')
   async CreateItem(
-    @Body() createItem: RecievedListingItemPayload,
+    @Body() createItem: ListingItemInput,
   ): Promise<string> {
     return this.searchItemService.ItemCreate(createItem);
   }

@@ -1,89 +1,17 @@
-import { plainToInstance } from 'class-transformer';
+import { Academics, Condition } from '@prisma/client';
 import {
   ArrayNotEmpty,
   ArrayUnique,
   IsArray,
   IsDate,
-  IsFQDN,
-  IsIn,
+  IsEnum,
   IsInt,
   IsOptional,
   IsString,
   Min,
-  validate
 } from 'class-validator';
 
-export async function validateInput<T extends object>(
-  cls: new () => T,
-  plain: object
-): Promise<T> {
-  const instance = plainToInstance(cls, plain);
-
-  const errors = await validate(instance);
-  if (errors.length > 0) {
-    throw new Error(errors.toString());
-  }
-
-  return instance;
-}
-
-const allConditions = [
-'BRAND_NEW',
-'LIKE_NEW',
-'GOOD',
-'FAIR',
-'POOR',
-'BAD'];
-
-export type Condition =
-  | 'BRAND_NEW' //新品、未使用
-  | 'LIKE_NEW' //未使用に近い
-  | 'GOOD' //目立った傷や汚れなし
-  | 'FAIR' //やや傷や汚れあり
-  | 'POOR' //傷や汚れあり
-  | 'BAD'; //全体的に状態が悪い
-
-const allAcademics = [
-  'All'
-  ,'LiberalArts'
-  ,'Law'
-  ,'SocialSciences'
-  ,'InternationalRelations'
-  ,'Literature'
-  ,'Business'
-  ,'PolicyScience'
-  ,'Psychology'
-  ,'GlobalLiberalArts'
-  ,'Film'
-  ,'InformationScience'
-  ,'ScienceAndTechnology'
-  ,'Economics'
-  ,'SportsHealthScience'
-  ,'FoodManagement'
-  ,'LifeSciences'
-  ,'Pharmacy'];
-
-export type Academics =
-  | 'All'
-  | 'LiberalArts'
-  | 'Law'
-  | 'SocialSciences'
-  | 'InternationalRelations'
-  | 'Literature'
-  | 'Business'
-  | 'PolicyScience'
-  | 'Psychology'
-  | 'GlobalLiberalArts'
-  | 'Film'
-  | 'InformationScience'
-  | 'ScienceAndTechnology'
-  | 'Economics'
-  | 'SportsHealthScience'
-  | 'FoodManagement'
-  | 'LifeSciences'
-  | 'Pharmacy';
-
-export class RecievedListingItemPayload {
+export class ListingItemInput {
   @IsString()
   documentId: string; //FirebaseにおけるID
   @IsOptional()
@@ -92,9 +20,9 @@ export class RecievedListingItemPayload {
   @IsOptional()
   @IsString()
   purchasedUserId?: string; //購入したユーザーのid
-  @IsIn(allConditions)
+  @IsEnum(Condition)
   condition: Condition; //商品の状態
-  @IsIn(allAcademics)
+  @IsEnum(Academics)
   department: Academics; //学部
   @IsOptional()
   @IsString()
@@ -113,7 +41,7 @@ export class RecievedListingItemPayload {
   firebaseUserId: string; //ユーザーID
 }
 
-export class ListingItemPayload extends RecievedListingItemPayload {
+export class ListingItemPayload extends ListingItemInput {
   @IsInt()
   id: number; //ID
   @IsDate()
