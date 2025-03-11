@@ -18,6 +18,7 @@
     "docker:command": "docker exec -it nestjs sh",
     "makemigration": "npx prisma migrate dev",
     "migrate": "prisma migrate deploy",
+    "generate": "npm run prisma:generate",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -32,6 +33,8 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@prisma/client": "^5.21.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"
   },

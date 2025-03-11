@@ -20,8 +20,8 @@ enum Campus {
 
 enum Weekday {
   Monday   
-  Tuseday   
-  Wednsday 
+  Tuesday   
+  Wednesday  
   Thursday  
   Friday    
   Saturday  
@@ -29,23 +29,25 @@ enum Weekday {
 }
 
 enum Academics {
-  Law                       // 法学部
-  SocialSciences            // 社会学部
-  InternationalRelations    // 国際関係学部
-  Letters                   // 文学部
-  Economics                 // 経済学部
-  SportandHealthScience     // スポーツ健康科学部
-  ScienceandEngineering     // 理工学部
-  LifeSciences              // 生命科学部
-  PharmaceuticalSciences    // 薬学部
-  GastronomyManagement      // 食マネジメント学部
-  BusinessAdministration    // 経営学部
-  PolicyScience             // 政策科学部
-  ComprehensivePsychology   // 総合心理学部
-  GlobalLiberalArts         // グローバル教養学部
-  ImageArtsandSciences      // 映像学部
-  InformationScienceandEngineering // 情報理工学部
-}
+  All               // すべて
+  LiberalArts       // 教養科目
+  Law               // 法学部
+  SocialSciences    // 産業社会学部
+  InternationalRelations // 国際関係学部
+  Literature        // 文学部
+  Business          // 経営学部
+  PolicyScience     // 政策科学部
+  Psychology        // 総合心理学部
+  GlobalLiberalArts // グローバル教養学部
+  Film              // 映像学部
+  InformationScience // 情報理工学部
+  ScienceAndTechnology // 理工学部
+  Economics         // 経済学部
+  SportsHealthScience // スポーツ健康科学部
+  FoodManagement    // 食マネージメント学部
+  LifeSciences      // 生命科学部
+  Pharmacy          // 薬学部
+  }
 
 enum Condition {
   BRAND_NEW //新品、未使用
@@ -57,25 +59,28 @@ enum Condition {
 }
 
 model Lecture {
-  id           Int        @id @default(autoincrement()) // ID
-  classCode    Int        @map("class_code")// 授業コード
-  name         String    // 授業名
-  credits      Int        @default(0) // 単位数
-  category     String?    // 科目区分　（例；教養、 基礎専門、専門）
-  field        String?    // 分野　（例：必修、選択必修、 履修指定）
-  syllabus     String?   // シラバス（null許容）
-  teacher      String    // 教員名
-  academic    Academics  // 学部
-  building     String?    // 建物
-  classroom    String?    // 教室
-  schoolYear   Int        @map("school_year")// 年度
-  semester     Boolean   // 学期　（0：春、1：秋）
-  weekday      Weekday   // 曜日
-  period       Int       // 時限
-  feedbacks    Feedback[] // リレーション: Lecture -> Feedback
+  id              Int        @id @default(autoincrement())
+  classCode       Int        @map("class_code")
+  name            String
+  credits         Int        @default(0) // 単位数
+  category        String?    // 科目区分　（例；教養、 基礎専門、専門）
+  field           String?
+  syllabus        String?
+  teacher         String
+  academic        Academics
+  schoolYear      Int        @map("school_year")
+  semester        Boolean   // 学期　（0：春、1：秋）
+  weekday         Weekday
+  period          Int
+  feedbacks       Feedback[]
+  campus          Campus?
+  rawClassroom    String?   @map("raw_classrom") // 念のため教室も入れておく
+  lectureClassrooms LectureClassroom[] // リレーション: Lecture -> lectureClassroom
 
-  @@unique([classCode, academic, name])
+  @@unique([academic, schoolYear, semester, classCode, weekday, period])
+  @@index([academic, schoolYear, semester, classCode, weekday, period])
   @@index([schoolYear, semester, weekday, period, academic])
+  @@index([schoolYear,semester,weekday,period,campus])
   @@index ([name, teacher])  // 複合キー
 }
 
@@ -131,25 +136,59 @@ model LabFeedback {
 model Building {
   id           Int       @id @default(autoincrement()) // ID
 	campus       Campus // enumのやつ
-	name         String // 建物名
-	classRoom    String[]  // 空き教室名
-  schoolYear   Int       @map("school_year")// 年度
-	semester     Boolean
-	weekDay      String    @map("week_day")
-	period       Int
+	name         String     @unique() // 建物名
+  
+  classrooms   Classroom[] // リレーション: Building -> ClassRoom
+}
 
+model LectureClassroom {
+  id           Int       @id @default(autoincrement()) // ID
+  lectureId    Int       @map("lecture_id")// リレーションで参照する講義ID
+  classroomId  Int       @map("classroom_id")// リレーションで参照する教室ID
+
+  lecture      Lecture?   @relation(fields: [lectureId], references: [id]) // リレーション: Lecture -> lectureClassroom
+  classroom    Classroom? @relation(fields: [classroomId], references: [id]) // リレーション: Classroom -> lectureClassroom
+
+  @@unique([lectureId, classroomId])
+  @@index([lectureId, classroomId])
+}
+
+model Classroom {
+  id           Int       @id @default(autoincrement()) // ID
+  buildingId   Int       @map("building_id")// リレーションで参照する建物ID
+  name         String    // 教室名
+
+  building     Building @relation(fields: [buildingId], references: [id]) // リレーション: Classroom -> Building
+  lectureClassrooms LectureClassroom[] // リレーション: Classroom -> lectureClassroom
+
+  @@unique([buildingId, name])
+  @@index([buildingId, name])
 }
 
 model ListingItem{
   id               Int        @id @default(autoincrement()) // ID
-  documentId       String     @map("document_id") //FirebaseにおけるID
+  documentId       String     @unique @map("document_id") //FirebaseにおけるID
   purchasedAt      DateTime?  @map("purchased_at") //購入した日時
   purchasedUserId  String?    @map("purchased_user_id") //購入したユーザーのid
   condition        Condition   //商品の状態
-  createdAt        DateTime   @map("created_at") //出品された日時
+  createdAt        DateTime   @default(now()) @map("created_at") //出品された日時
   department       Academics   //学部
   description      String?     //商品の説明
-  imageUrl         String     @map("image_url") //商品の画像のURL
   price            Int         //商品の価格
   name             String      //商品名
+  firebaseUserId   String     @map("firebase_user_id") //ユーザーID
+
+  imageUrls         ImageUrl[] 
+  
+  @@map("listing_item")
+}
+
+model ImageUrl {
+  id  Int           @id @default(autoincrement())
+  url String
+  listingItemId Int @map("listing_item_id")
+
+  listingItem ListingItem  @relation(fields: [listingItemId], references: [id]) 
+  
+  @@map("image_url")
 }
