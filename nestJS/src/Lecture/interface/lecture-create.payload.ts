@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Campus, Weekday } from '@prisma/client';
+import { Campus, Semester, Weekday } from '@prisma/client';
 import { Academics } from '../../listing-item/interface/listing-item.payload';
 
 export type LectureCreatePayload = {
@@ -10,7 +10,7 @@ export type LectureCreatePayload = {
   syllabus: string;
   teacher: string;
   academic: Academics;
-  semester: boolean;
+  semester: Semester;
   weekday: Weekday;
   period: number;
   campus: Campus;
