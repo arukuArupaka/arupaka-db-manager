@@ -56,6 +56,11 @@ enum Condition {
   BAD //全体的に状態が悪い
 }
 
+enum Semester {
+  Spring
+  Autumn
+}
+
 model Lecture {
   id              Int        @id @default(autoincrement())
   classCode       Int        @map("class_code")
@@ -67,7 +72,7 @@ model Lecture {
   teacher         String
   academic        Academics
   schoolYear      Int        @map("school_year")
-  semester        Boolean   // 学期　（0：春、1：秋）
+  semester        Semester   // 学期　（0：春、1：秋）
   weekday         Weekday
   period          Int
   feedbacks       Feedback[]
