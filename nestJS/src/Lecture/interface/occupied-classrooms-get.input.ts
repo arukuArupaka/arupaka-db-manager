@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Campus, Weekday } from '@prisma/client';
+import { Campus, Semester, Weekday } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsString } from 'class-validator';
 
@@ -13,8 +13,9 @@ export class OccupiedClassroomsGetInput {
   schoolYear: number;
 
   @IsBoolean()
-  @Type(() => Boolean)
-  semester: boolean;
+  @IsEnum(Semester)
+  @Type(() => String)
+  semester: Semester;
 
   @IsString()
   @IsEnum(Weekday)

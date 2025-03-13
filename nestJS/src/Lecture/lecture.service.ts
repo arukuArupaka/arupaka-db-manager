@@ -239,7 +239,7 @@ export class LectureService {
           syllabus: el.fields.syllabus,
           teacher: el.fields.teacher,
           academic: el.fields.academic,
-          semester: Boolean(el.fields.semester),
+          semester: Boolean(el.fields.semester) ? 'Autumn' : 'Spring',
           weekday: el.fields.weekday,
           period: el.fields.period,
           campus: el.fields.campus !== 'None' ? el.fields.campus : undefined,

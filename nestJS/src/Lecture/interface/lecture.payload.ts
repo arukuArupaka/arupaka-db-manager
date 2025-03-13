@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Academics, Weekday } from '@prisma/client';
+import { Academics, Semester, Weekday } from '@prisma/client';
 
 export class LecturePayload {
   id: number;
@@ -12,7 +12,7 @@ export class LecturePayload {
   teacher: string;
   academic: Academics;
   schoolYear: number;
-  semester: boolean;
+  semester: Semester;
   weekday: Weekday;
   period: number;
   rawClassroom?: string;
