@@ -17,7 +17,7 @@ export class DeviceTokenService {
         return validatedDeviceTokens;
     }
 
-    async upsertDeviceToken(upsertDeviceToken:UpsertDeviceTokenInput):Promise<String>{
+    async upsertDeviceToken(upsertDeviceToken:UpsertDeviceTokenInput):Promise<string>{
         await this.prismaService.deviceToken.upsert({
             where: {
                 deviceToken: upsertDeviceToken.deviceToken
@@ -28,7 +28,7 @@ export class DeviceTokenService {
         return "upsert completed";
     }
 
-    async deleteDeviceToken(deleteDeviceToken:DeleteDeviceTokenInput):Promise<String>{
+    async deleteDeviceToken(deleteDeviceToken:DeleteDeviceTokenInput):Promise<string>{
         const deletingDeviceToken = await this.prismaService.deviceToken.findUnique(
             {
                 where:{
