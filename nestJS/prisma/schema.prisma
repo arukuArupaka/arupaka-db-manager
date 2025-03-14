@@ -197,3 +197,9 @@ model ImageUrl {
   
   @@map("image_url")
 }
+
+model DeviceToken {
+  id Int              @id @default(autoincrement())
+  deviceToken String  @unique @map("device_token")
+  firebaseUserId String? @map("firebase_user_id")
+}
