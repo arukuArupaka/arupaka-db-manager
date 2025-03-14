@@ -14,13 +14,13 @@ export class DeviceTokenController {
     }
 
     @Post('upsert')
-    async upsertDeviceToken(@Body() upsertDeviceToken:UpsertDeviceTokenInput,):Promise<String>{
+    async upsertDeviceToken(@Body() upsertDeviceToken:UpsertDeviceTokenInput,):Promise<string>{
         console.log(upsertDeviceToken instanceof UpsertDeviceTokenInput,upsertDeviceToken)
         return await this.deviceTokenService.upsertDeviceToken(upsertDeviceToken);
     }
 
     @Delete('delete')
-    async deleteDeviceToken(@Query() query:DeleteDeviceTokenInput):Promise<String>{
+    async deleteDeviceToken(@Query() query:DeleteDeviceTokenInput):Promise<string>{
         return await this.deviceTokenService.deleteDeviceToken(query);
     }
 }
