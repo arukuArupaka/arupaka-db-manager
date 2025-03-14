@@ -8,7 +8,6 @@ import { OccupiedClassroomsGetInput } from './interface/occupied-classrooms-get.
 import { BuildingAndClassroomsGetInput } from './interface/building-and-classrooms-get.input';
 import { LectureGetByClassroomInput } from './interface/lecture-get-by-classroom.input';
 
-
 @Controller('lecture')
 export class LectureController {
   constructor(private lectureService: LectureService) {}
