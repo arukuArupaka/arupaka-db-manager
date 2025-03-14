@@ -5,6 +5,7 @@ import { LectureModule } from './Lecture/lecture.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { SearchItemModule } from './listing-item/listing-item.module';
+import { DeviceTokenModule } from './device-token/device-token.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SearchItemModule } from './listing-item/listing-item.module';
     PrismaModule,
     LectureModule,
     SearchItemModule,
+    DeviceTokenModule,
   ],
   providers: [AppService, PrismaServiceProvider],
   exports: [PrismaServiceProvider],
