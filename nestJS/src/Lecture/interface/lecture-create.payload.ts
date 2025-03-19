@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Campus, Weekday } from '@prisma/client';
-import { Academics } from '../../listing-item/interface/listing-item.payload';
+import { Academics, Campus, Weekday } from '@prisma/client';
 
 export type LectureCreatePayload = {
   schoolYear: number;
