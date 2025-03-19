@@ -52,7 +52,7 @@ export class DeviceTokenService {
       return 'delete completed';
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError) {
-        throw new NotFoundException(e);
+        throw new NotFoundException();
       }
     }
   }
