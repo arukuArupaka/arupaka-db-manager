@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 
-export class UpsertDeviceTokenInput {
+export class DeviceTokenUpsertInput {
     @IsString()
     @IsNotEmpty()
     deviceToken:string;

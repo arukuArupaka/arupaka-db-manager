@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DeviceTokenPayload } from './interface/device-token.payload';
 import { CustomPrismaService } from 'src/prisma/prisma.service';
-import { UpsertDeviceTokenInput } from './interface/upsert-device-token.input';
-import { DeleteDeviceTokenInput } from './interface/delete-device-token.input';
+import { DeviceTokenUpsertInput } from './interface/device-token-upsert.input';
+import { DeviceTokenDeleteInput } from './interface/device-token-delete.input';
 import { validateValue } from 'src/common/validate-value';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class DeviceTokenService {
@@ -17,32 +18,33 @@ export class DeviceTokenService {
         return validatedDeviceTokens;
     }
 
-    async upsertDeviceToken(upsertDeviceToken:UpsertDeviceTokenInput):Promise<string>{
-        await this.prismaService.deviceToken.upsert({
+    async createDeviceToken(upsertDeviceToken:DeviceTokenUpsertInput):Promise<string>{
+        const UpsertedObject = await this.prismaService.deviceToken.upsert({
             where: {
                 deviceToken: upsertDeviceToken.deviceToken
             },
             create: upsertDeviceToken,
-            update: upsertDeviceToken,
+            update: {},
         })
-        return "upsert completed";
+        console.log(UpsertedObject);
+        if (!UpsertedObject){
+            return "creation failed";
+        }
+        return "upsert completed";  
     }
 
-    async deleteDeviceToken(deleteDeviceToken:DeleteDeviceTokenInput):Promise<string>{
-        const deletingDeviceToken = await this.prismaService.deviceToken.findUnique(
-            {
+    async deleteDeviceToken(deleteDeviceToken:DeviceTokenDeleteInput):Promise<string>{
+        try{    
+            await this.prismaService.deviceToken.delete({
                 where:{
-                    deviceToken:deleteDeviceToken.deviceToken,
-        }});
-
-        if(!deletingDeviceToken){
-            return "Such devicetoken doesn`t exist."
-        }
-        await this.prismaService.deviceToken.delete({
-            where:{
-                deviceToken: deleteDeviceToken.deviceToken,
+                    deviceToken: deleteDeviceToken.deviceToken,
+                }
+            })
+            return "delete completed";
+        }catch(e){
+            if (e instanceof PrismaClientKnownRequestError){
+                throw new NotFoundException(e)
             }
-        })
-        return "delete completed";
+        }
     }
 }

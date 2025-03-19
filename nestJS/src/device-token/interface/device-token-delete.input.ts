@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty } from "class-validator";
 
-export class DeleteDeviceTokenInput {
+export class DeviceTokenDeleteInput {
     @IsString()
     @IsNotEmpty()
     deviceToken:string;
