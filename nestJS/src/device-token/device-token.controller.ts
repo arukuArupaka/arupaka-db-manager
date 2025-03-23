@@ -15,9 +15,9 @@ export class DeviceTokenController {
 
   @Post('create')
   async createDeviceToken(
-    @Body() upsertDeviceToken: DeviceTokenCreateInput,
+    @Body() createDeviceToken: DeviceTokenCreateInput,
   ): Promise<string> {
-    return await this.deviceTokenService.createDeviceToken(upsertDeviceToken);
+    return await this.deviceTokenService.createDeviceToken(createDeviceToken);
   }
 
   @Delete('delete')
