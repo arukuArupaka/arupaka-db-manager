@@ -26,11 +26,11 @@ export class DeviceTokenService {
   }
 
   async createDeviceToken(
-    upsertDeviceToken: DeviceTokenCreateInput,
+    createDeviceToken: DeviceTokenCreateInput,
   ): Promise<string> {
     try {
-      this.prisma.deviceToken.create({
-        data: upsertDeviceToken,
+      await this.prisma.deviceToken.create({
+        data: createDeviceToken,
       });
       return 'create completed';
     } catch (e) {
