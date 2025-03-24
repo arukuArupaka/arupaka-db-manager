@@ -29,8 +29,28 @@ enum Weekday {
 }
 
 enum Academics {
+  Law               // 法学部
+  SocialSciences    // 産業社会学部
+  InternationalRelations // 国際関係学部
+  Literature        // 文学部
+  Business          // 経営学部
+  PolicyScience     // 政策科学部
+  Psychology        // 総合心理学部
+  GlobalLiberalArts // グローバル教養学部
+  Film              // 映像学部
+  InformationScience // 情報理工学部
+  ScienceAndTechnology // 理工学部
+  Economics         // 経済学部
+  SportsHealthScience // スポーツ健康科学部
+  FoodManagement    // 食マネージメント学部
+  LifeSciences      // 生命科学部
+  Pharmacy          // 薬学部
+  }
+
+enum ItemCategory {
   All               // すべて
   LiberalArts       // 教養科目
+  FurnitureAndHomeAppliances // 家具家電
   Law               // 法学部
   SocialSciences    // 産業社会学部
   InternationalRelations // 国際関係学部
