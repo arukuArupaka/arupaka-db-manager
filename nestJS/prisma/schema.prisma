@@ -197,7 +197,7 @@ model ListingItem{
   purchasedUserId  String?    @map("purchased_user_id") //購入したユーザーのid
   condition        Condition   //商品の状態
   createdAt        DateTime   @default(now()) @map("created_at") //出品された日時
-  department       Academics   //学部
+  category         ItemCategory   //学部
   description      String?     //商品の説明
   price            Int         //商品の価格
   name             String      //商品名
