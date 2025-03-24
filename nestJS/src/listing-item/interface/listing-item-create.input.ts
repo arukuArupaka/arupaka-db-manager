@@ -1,9 +1,8 @@
-import { Academics, Condition } from '@prisma/client';
+import { Condition, ItemCategory } from '@prisma/client';
 import {
   ArrayNotEmpty,
   ArrayUnique,
   IsArray,
-  IsDate,
   IsEnum,
   IsInt,
   IsOptional,
@@ -16,16 +15,16 @@ export class ListingItemCreateInput {
   documentId: string; //FirebaseにおけるID
   @IsEnum(Condition)
   condition: Condition; //商品の状態
-  @IsEnum(Academics)
-  department: Academics; //学部
+  @IsEnum(ItemCategory)
+  category: ItemCategory; //学部
   @IsOptional()
   @IsString()
   description?: string; //商品の説明
   @IsArray()
   @ArrayNotEmpty()
   @ArrayUnique()
-  @IsString({each:true})
-  imageUrls:string[];
+  @IsString({ each: true })
+  imageUrls: string[];
   @IsInt()
   @Min(0)
   price: number; //商品の価格
