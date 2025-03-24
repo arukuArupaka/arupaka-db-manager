@@ -60,5 +60,5 @@ def update_lecture_category(file_path):
 
 
 # 実行
-file_path = "./DepInfo/Department_of_Butsuri.xlsx"
+file_path = "./DepInfo/ScienceandEngineering_lecture_data.xlsx"
 update_lecture_category(file_path)
