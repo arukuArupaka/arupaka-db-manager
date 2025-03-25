@@ -13,35 +13,11 @@ import { PushNotificationInput } from './interface/push-notification.input';
 import { ExpoPushPayload } from './interface/expo-push.payload';
 import { chunkArray } from 'src/common/chunkArray';
 
-const maxTokensPerReqest = 100;
+const MAX_TOKENS_PER_REQUEST = 100;
 
 @Injectable()
 export class DeviceTokenService {
   constructor(private readonly prisma: CustomPrismaService) {}
-
-  private createExpoPushPayload(
-    pushNotificationInput: PushNotificationInput,
-    deviceTokens: string[],
-  ): ExpoPushPayload {
-    return {
-      to: deviceTokens,
-      title: pushNotificationInput.title,
-      body: pushNotificationInput.message,
-      data: pushNotificationInput.data,
-    };
-  }
-
-  private async fetchExpoPush(expoPushPayload: ExpoPushPayload): Promise<void> {
-    await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Accept-encoding': 'gzip, deflate',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(expoPushPayload),
-    });
-  }
 
   async getAllDeviceToken(): Promise<DeviceTokenPayload[]> {
     const allDeviceTokens: DeviceTokenPayload[] =
@@ -75,14 +51,15 @@ export class DeviceTokenService {
     try {
       const deviceTokenObjects = await this.prisma.deviceToken.findMany();
       const deviceTokens = deviceTokenObjects.map((el) => el.deviceToken);
-      const expoPushPayloads = chunkArray(maxTokensPerReqest, deviceTokens).map(
-        (deviceTokenArray) => {
-          return this.createExpoPushPayload(
-            pushNotificationInput,
-            deviceTokenArray,
-          );
-        },
-      );
+      const expoPushPayloads = chunkArray(
+        MAX_TOKENS_PER_REQUEST,
+        deviceTokens,
+      ).map((deviceTokenArray) => {
+        return this.createExpoPushPayload(
+          pushNotificationInput,
+          deviceTokenArray,
+        );
+      });
       await Promise.all(expoPushPayloads.map(this.fetchExpoPush));
       return 'push notification completed';
     } catch (e) {
@@ -107,5 +84,28 @@ export class DeviceTokenService {
         throw new NotFoundException();
       }
     }
+  }
+  private createExpoPushPayload(
+    pushNotificationInput: PushNotificationInput,
+    deviceTokens: string[],
+  ): ExpoPushPayload {
+    return {
+      to: deviceTokens,
+      title: pushNotificationInput.title,
+      body: pushNotificationInput.message,
+      data: pushNotificationInput.data,
+    };
+  }
+
+  private async fetchExpoPush(expoPushPayload: ExpoPushPayload): Promise<void> {
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(expoPushPayload),
+    });
   }
 }
