@@ -13,39 +13,35 @@ import { PushNotificationInput } from './interface/push-notification.input';
 import { ExpoPushPayload } from './interface/expo-push.payload';
 import { chunkArray } from 'src/common/chunkArray';
 
-const chunkStrArr100 = chunkArray<string>(100);
+const maxTokensPerReqest = 100;
 
-const createExpoPushPayload = (
-  pushNotificationInput: PushNotificationInput,
-  deviceTokens: string[],
-): ExpoPushPayload => {
-  return {
-    to: deviceTokens,
-    title: pushNotificationInput.title,
-    body: pushNotificationInput.message,
-    data: pushNotificationInput.data,
-  };
-};
-
-const fetchExpoPush = async (expoPushPayload: ExpoPushPayload) => {
-  const res = await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Accept-encoding': 'gzip, deflate',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(expoPushPayload),
-  });
-  console.log(res);
-};
-
-const pickUpDeviceToken = (deviceTokens: DeviceTokenPayload): string => {
-  return deviceTokens.deviceToken;
-};
 @Injectable()
 export class DeviceTokenService {
   constructor(private readonly prisma: CustomPrismaService) {}
+
+  private createExpoPushPayload(
+    pushNotificationInput: PushNotificationInput,
+    deviceTokens: string[],
+  ): ExpoPushPayload {
+    return {
+      to: deviceTokens,
+      title: pushNotificationInput.title,
+      body: pushNotificationInput.message,
+      data: pushNotificationInput.data,
+    };
+  }
+
+  private async fetchExpoPush(expoPushPayload: ExpoPushPayload): Promise<void> {
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(expoPushPayload),
+    });
+  }
 
   async getAllDeviceToken(): Promise<DeviceTokenPayload[]> {
     const allDeviceTokens: DeviceTokenPayload[] =
@@ -78,13 +74,16 @@ export class DeviceTokenService {
   ): Promise<string> {
     try {
       const deviceTokenObjects = await this.prisma.deviceToken.findMany();
-      const deviceTokens = deviceTokenObjects.map(pickUpDeviceToken);
-      const expoPushPayloads = chunkStrArr100(deviceTokens).map(
+      const deviceTokens = deviceTokenObjects.map((el) => el.deviceToken);
+      const expoPushPayloads = chunkArray(maxTokensPerReqest, deviceTokens).map(
         (deviceTokenArray) => {
-          return createExpoPushPayload(pushNotificationInput, deviceTokenArray);
+          return this.createExpoPushPayload(
+            pushNotificationInput,
+            deviceTokenArray,
+          );
         },
       );
-      await Promise.all(expoPushPayloads.map(fetchExpoPush));
+      await Promise.all(expoPushPayloads.map(this.fetchExpoPush));
       return 'push notification completed';
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError) {
