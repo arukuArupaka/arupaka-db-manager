@@ -11,7 +11,6 @@ import { validateValue } from 'src/common/validate-value';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PushNotificationInput } from './interface/push-notification.input';
 import { ExpoPushPayload } from './interface/expo-push.payload';
-import { chunkArray } from 'src/common/chunkArray';
 
 const MAX_TOKENS_PER_REQUEST = 100;
 
@@ -51,7 +50,7 @@ export class DeviceTokenService {
     try {
       const deviceTokenObjects = await this.prisma.deviceToken.findMany();
       const deviceTokens = deviceTokenObjects.map((el) => el.deviceToken);
-      const expoPushPayloads = chunkArray(
+      const expoPushPayloads = this.chunkArray(
         MAX_TOKENS_PER_REQUEST,
         deviceTokens,
       ).map((deviceTokenArray) => {
@@ -107,5 +106,14 @@ export class DeviceTokenService {
       },
       body: JSON.stringify(expoPushPayload),
     });
+  }
+
+  private chunkArray<T>(chunkSize: number, array: T[]): T[][] {
+    return Array.from(
+      { length: Math.ceil(array.length / chunkSize) },
+      (_, i) => {
+        return array.slice(i * chunkSize, (i + 1) * chunkSize);
+      },
+    );
   }
 }
