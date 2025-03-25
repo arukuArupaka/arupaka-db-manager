@@ -7,4 +7,4 @@
 ## 使用技術
 * nestJS(ローカルで実行)
 * postgreSQL(dockerコンテナ内で実行)
-* python-selenium(時間割情報のスクレイピング)
+* Scraping(時間割情報のスクレイピング)
