@@ -47,25 +47,19 @@ export class DeviceTokenService {
   async pushNotification(
     pushNotificationInput: PushNotificationInput,
   ): Promise<string> {
-    try {
-      const deviceTokenObjects = await this.prisma.deviceToken.findMany();
-      const deviceTokens = deviceTokenObjects.map((el) => el.deviceToken);
-      const expoPushPayloads = this.chunkArray(
-        MAX_TOKENS_PER_REQUEST,
-        deviceTokens,
-      ).map((deviceTokenArray) => {
-        return this.createExpoPushPayload(
-          pushNotificationInput,
-          deviceTokenArray,
-        );
-      });
-      await Promise.all(expoPushPayloads.map(this.fetchExpoPush));
-      return 'push notification completed';
-    } catch (e) {
-      if (e instanceof PrismaClientKnownRequestError) {
-        throw new BadRequestException();
-      }
-    }
+    const deviceTokenObjects = await this.prisma.deviceToken.findMany();
+    const deviceTokens = deviceTokenObjects.map((el) => el.deviceToken);
+    const expoPushPayloads = this.chunkArray(
+      MAX_TOKENS_PER_REQUEST,
+      deviceTokens,
+    ).map((deviceTokenArray) => {
+      return this.createExpoPushPayload(
+        pushNotificationInput,
+        deviceTokenArray,
+      );
+    });
+    await Promise.all(expoPushPayloads.map(this.fetchExpoPush));
+    return 'push notification completed';
   }
 
   async deleteDeviceToken(
