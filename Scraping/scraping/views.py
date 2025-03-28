@@ -9,7 +9,10 @@ from django.shortcuts import get_object_or_404
 from .models import Lecture
 from .serializers import MyModelSerializer
 import asyncio
-from .web_auto import web_search  # スクレイピングコードをscraper.pyとして分離
+from .web_auto import web_search  
+from .kamoku_status import update_lecture_category
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 class LectureViewSet(viewsets.ModelViewSet):
     queryset = Lecture.objects.all()
@@ -67,3 +70,15 @@ async def run_scraper():
                 "semester": data['semester'],
             }
         )
+
+@csrf_exempt
+def update_lecture_category_view(request):
+    """ エンドポイントから update_lecture_category を実行するAPI """
+    file_path = "C:/arupaka-db-manager/Scraping/scraping/DepInfo/ScienceandEngineering_lecture_data.xlsx"
+
+    try:
+        result = update_lecture_category(file_path)
+    except FileNotFoundError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse(result, safe=False)  

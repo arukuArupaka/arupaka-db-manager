@@ -58,7 +58,3 @@ def update_lecture_category(file_path):
 
     print("更新が完了しました")
 
-
-# 実行
-file_path = "./DepInfo/ScienceandEngineering_lecture_data.xlsx"
-update_lecture_category(file_path)
