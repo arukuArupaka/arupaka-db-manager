@@ -22,7 +22,7 @@ export class AuthGuard implements CanActivate {
 
     try {
       request['user'] = await this.firebaseAuth.validateUser(idToken);
-      return true; // returnだけだとthrowされるのでtrueを返しておく
+      return true;
     } catch {
       throw new UnauthorizedException('認証情報が正しくありません');
     }
