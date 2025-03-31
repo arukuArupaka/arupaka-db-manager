@@ -3,7 +3,6 @@ import {
   ArrayNotEmpty,
   ArrayUnique,
   IsArray,
-  IsDate,
   IsEnum,
   IsInt,
   IsOptional,
@@ -24,8 +23,8 @@ export class ListingItemCreateInput {
   @IsArray()
   @ArrayNotEmpty()
   @ArrayUnique()
-  @IsString({each:true})
-  imageUrls:string[];
+  @IsString({ each: true })
+  imageUrls: string[];
   @IsInt()
   @Min(0)
   price: number; //商品の価格
