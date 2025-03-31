@@ -36,13 +36,17 @@ export class LectureService {
   ) {
     if (campus === 'BKC') {
       if (building === 'コラーニングⅠ' || building === 'コラーニングⅡ') {
-        return `C${classroom.includes('情報処理') || classroom.includes('情報語学') ? classroom : removeJapanese(classroom)}`;
+        return classroom.includes('情報')
+          ? classroom
+          : `C${removeJapanese(classroom)}`;
       }
       if (building === 'フォレストハウス') {
         return `F${removeJapanese(classroom)}`;
       }
-      if (building === 'プリズムハウス') {
-        return `P${removeJapanese(classroom)}`;
+      if (building === 'プリズム') {
+        return classroom.includes('情報')
+          ? classroom
+          : `P${removeJapanese(classroom)}`;
       }
       if (building === 'アドセミナリオ') {
         return `A${removeJapanese(classroom)}`;
