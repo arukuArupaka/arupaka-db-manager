@@ -36,7 +36,7 @@ export class LectureService {
   ) {
     if (campus === 'BKC') {
       if (building === 'コラーニングⅠ' || building === 'コラーニングⅡ') {
-        return `C${classroom.includes('情報処理') ? classroom : removeJapanese(classroom)}`;
+        return `C${classroom.includes('情報処理') || classroom.includes('情報語学') ? classroom : removeJapanese(classroom)}`;
       }
       if (building === 'フォレストハウス') {
         return `F${removeJapanese(classroom)}`;
