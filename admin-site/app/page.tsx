@@ -1,37 +1,65 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { auth } from "../firebase-config";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { setCookie } from "nookies";
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [userId, setUserId] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-
-    // Simple validation
     if (!userId || !password) {
-      setError("IDとパスワードを入力してください。")
-      return
+      setError("IDとパスワードを入力してください。");
+      return;
     }
 
-    setIsLoading(true)
-    // Simulate loading for a better UX
-    setTimeout(() => {
-      router.push("/dashboard")
-    }, 1000)
-  }
+    setIsLoading(true);
+    await signInWithEmailAndPassword(auth, userId, password)
+      .then(() => {
+        setIsLoading(false);
+        router.push("/dashboard");
+      })
+      .catch((error) => {
+        setError(error.message);
+        console.log(error.message, error.code);
+        setIsLoading(false);
+        return;
+      });
+  };
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const token = await user.getIdToken();
+        setCookie(null, "token", token, {
+          maxAge: 24 * 60 * 60,
+          path: "/",
+        });
+      } else {
+        setCookie(null, "token", "", {
+          path: "/",
+        });
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50">
@@ -86,16 +114,18 @@ export default function LoginPage() {
 
             {error && <div className="text-sm text-red-500 text-center">{error}</div>}
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              disabled={isLoading}
+              onClick={handleLogin}
+            >
               {isLoading ? "ログイン中..." : "ログイン"}
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">※ このデモでは任意のIDとパスワードでログインできます</p>
-        </CardFooter>
+        <CardFooter className="flex justify-center"></CardFooter>
       </Card>
     </div>
-  )
+  );
 }
-
