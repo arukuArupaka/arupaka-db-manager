@@ -1,12 +1,18 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { SearchItemService } from './listing-item.service';
 import { ListingItemPayload } from './interface/listing-item.payload';
 import { ListingItemSearchInput } from './interface/listingitem-search.input';
 import { ListingItemCreateInput } from './interface/listing-item-create.input';
+import { AuthGuard } from 'src/common/guards/auth.guard';
 
 @Controller('listing_item')
 export class SearchItemController {
   constructor(private searchItemService: SearchItemService) {}
+  @Get('get_all')
+  @UseGuards(AuthGuard)
+  async getAllItems(): Promise<ListingItemPayload[]> {
+    return await this.searchItemService.getAllItems();
+  }
 
   @Get('search_item')
   async searchItems(

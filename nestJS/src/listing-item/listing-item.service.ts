@@ -9,6 +9,46 @@ import { ListingItemCreateInput } from './interface/listing-item-create.input';
 export class SearchItemService {
   constructor(private readonly prisma: CustomPrismaService) {}
 
+  async getAllItems(): Promise<ListingItemPayload[]> {
+    const items = await this.prisma.listingItem.findMany({
+      //全部select(imageurl含め)
+      select: {
+        id: true,
+        documentId: true,
+        purchasedAt: true,
+        purchasedUserId: true,
+        condition: true,
+        createdAt: true,
+        department: true,
+        description: true,
+        price: true,
+        name: true,
+        firebaseUserId: true,
+        imageUrls: true,
+      },
+    });
+    const newItems = await Promise.all(
+      items.map((item) => {
+        const newItem: ListingItemPayload = {
+          id: item.id,
+          createdAt: item.createdAt,
+          documentId: item.documentId,
+          condition: item.condition,
+          department: item.department,
+          imageUrls: item.imageUrls.map((imageUrl) => {
+            return imageUrl.url;
+          }),
+          price: item.price,
+          name: item.name,
+          firebaseUserId: item.firebaseUserId,
+        };
+        const checkedItem = validateValue(ListingItemPayload, newItem);
+        return checkedItem;
+      }),
+    );
+    return newItems;
+  }
+
   async searchItems(
     query: ListingItemSearchInput,
   ): Promise<ListingItemPayload[]> {
