@@ -4,7 +4,6 @@ export const users = [
     name: "John Doe",
     email: "john@university.edu",
     status: "active",
-    role: "student",
     lastActive: "Today, 2:30 PM",
     avatar: "/placeholder.svg?height=32&width=32",
     initials: "JD",
@@ -14,7 +13,6 @@ export const users = [
     name: "Jane Smith",
     email: "jane@university.edu",
     status: "active",
-    role: "student",
     lastActive: "Today, 1:15 PM",
     avatar: "/placeholder.svg?height=32&width=32",
     initials: "JS",
@@ -24,7 +22,6 @@ export const users = [
     name: "Mike Johnson",
     email: "mike@university.edu",
     status: "inactive",
-    role: "student",
     lastActive: "Yesterday",
     avatar: "/placeholder.svg?height=32&width=32",
     initials: "MJ",
@@ -34,7 +31,6 @@ export const users = [
     name: "Sarah Williams",
     email: "sarah@university.edu",
     status: "active",
-    role: "faculty",
     lastActive: "Today, 10:30 AM",
     avatar: "/placeholder.svg?height=32&width=32",
     initials: "SW",
@@ -44,10 +40,8 @@ export const users = [
     name: "Alex Brown",
     email: "alex@university.edu",
     status: "active",
-    role: "admin",
     lastActive: "Today, 9:45 AM",
     avatar: "/placeholder.svg?height=32&width=32",
     initials: "AB",
   },
-]
-
+];
