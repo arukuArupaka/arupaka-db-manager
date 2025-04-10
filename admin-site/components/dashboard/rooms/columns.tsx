@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import type { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import type { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,21 +10,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/dropdown-menu";
+import { ClassRoom } from "@/components/interface/ClassRoom";
 
-export type Room = {
-  id: string
-  name: string
-  building: string
-  capacity: number
-  type: "lecture" | "lab" | "seminar" | "office"
-  features: string[]
-  status: "available" | "occupied" | "maintenance"
-  schedule: string
-}
-
-export const columns: ColumnDef<Room>[] = [
+export const columns: ColumnDef<ClassRoom>[] = [
+  {
+    accessorKey: "id",
+    header: "ID",
+  },
+  {
+    accessorKey: "buildingId",
+    header: "BuildingId",
+  },
   {
     accessorKey: "name",
     header: "Name",
@@ -34,48 +31,13 @@ export const columns: ColumnDef<Room>[] = [
     header: "Building",
   },
   {
-    accessorKey: "capacity",
-    header: "Capacity",
-  },
-  {
-    accessorKey: "type",
-    header: "Type",
-    cell: ({ row }) => {
-      return <div className="capitalize">{row.getValue("type")}</div>
-    },
-  },
-  {
-    accessorKey: "features",
-    header: "Features",
-    cell: ({ row }) => {
-      const features = row.getValue("features") as string[]
-      return (
-        <div className="flex flex-wrap gap-1">
-          {features.map((feature) => (
-            <Badge key={feature} variant="outline" className="capitalize">
-              {feature}
-            </Badge>
-          ))}
-        </div>
-      )
-    },
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string
-      return (
-        <Badge variant={status === "available" ? "default" : status === "occupied" ? "outline" : "secondary"}>
-          {status}
-        </Badge>
-      )
-    },
+    accessorKey: "lectureClassRooms",
+    header: "LectureClassRooms",
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const room = row.original
+      const room = row.original;
 
       return (
         <DropdownMenu>
@@ -94,8 +56,7 @@ export const columns: ColumnDef<Room>[] = [
             <DropdownMenuItem>Mark as maintenance</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
-
+];
