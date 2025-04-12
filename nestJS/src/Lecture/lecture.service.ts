@@ -36,16 +36,25 @@ export class LectureService {
   ) {
     if (campus === 'BKC') {
       if (building === 'コラーニングⅠ' || building === 'コラーニングⅡ') {
-        return `C${classroom.includes('情報処理') ? classroom : removeJapanese(classroom)}`;
+        return classroom.includes('情報')
+          ? classroom
+          : `C${removeJapanese(classroom)}`;
       }
       if (building === 'フォレストハウス') {
         return `F${removeJapanese(classroom)}`;
       }
-      if (building === 'プリズムハウス') {
-        return `P${removeJapanese(classroom)}`;
+      if (building === 'プリズム') {
+        return classroom.includes('情報')
+          ? classroom
+          : `P${removeJapanese(classroom)}`;
       }
       if (building === 'アドセミナリオ') {
         return `A${removeJapanese(classroom)}`;
+      }
+      if (building === 'アクロス') {
+        return classroom.includes('情報')
+          ? classroom
+          : `AC${removeJapanese(classroom)}`;
       }
     }
     if (campus === 'OIC') {
@@ -138,6 +147,36 @@ export class LectureService {
       KIC: KICClassrooms,
       Other: OtherClassrooms,
     };
+  }
+
+  /**
+   * loadLectures実行後に、建物名を正しくなおす関数
+   * @returns
+   */
+  async renameBuildingNames(): Promise<void> {
+    // loadLectures実行後に、教室名を正しくなおす対象（適宜手動で追加が必要）
+    const targetBuildings = [
+      { oldName: 'アクロス', newName: 'アクロスウィング' },
+      { oldName: 'プリズム', newName: 'プリズムハウス' },
+    ];
+    const updatePromises = (params: { oldName: string; newName: string }) => {
+      return this.prisma.building.update({
+        where: {
+          name: params.oldName,
+        },
+        data: {
+          name: params.newName,
+        },
+      });
+    };
+    Promise.all(
+      targetBuildings.map((building) => {
+        return updatePromises({
+          oldName: building.oldName,
+          newName: building.newName,
+        });
+      }),
+    );
   }
 
   /**
@@ -342,6 +381,8 @@ export class LectureService {
         lectureBatch = [];
       }
     }
+
+    await this.renameBuildingNames();
 
     return 'ok';
   }
