@@ -22,7 +22,17 @@ export type Schedule = {
   message: string;
 };
 
-export const columns: ColumnDef<Schedule>[] = [
+export type ScreenScheduleData = {
+  id: string;
+  scheduleId: string;
+  description: string;
+  executeTime: string;
+  message: string;
+};
+
+export const columns = (
+  setIsOpenDeleteModal: React.Dispatch<React.SetStateAction<boolean>>
+): ColumnDef<Schedule>[] => [
   {
     accessorKey: "scheduleId",
     header: "Schedule ID",
@@ -45,6 +55,7 @@ export const columns: ColumnDef<Schedule>[] = [
       const handleDelete = () => {
         console.log("Delete action triggered for timetable:", timetable.id);
         // ここで削除処理を実装（例: API呼び出し、状態更新など）
+        setIsOpenDeleteModal(true);
       };
 
       const handleEdit = () => {
