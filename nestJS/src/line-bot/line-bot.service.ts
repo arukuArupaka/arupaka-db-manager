@@ -81,7 +81,29 @@ export class LineBotService {
     this.schedulerRegistry.addCronJob(id, job);
     job.start();
 
-    return `スケジュール[${id}]を作成しました。`;
+    return 'ok';
+  }
+
+  /**
+   * 指定IDのジョブを削除する。
+   * @param id 削除するスケジュールID
+   */
+  deleteSchedule(id: string): string {
+    if (!this.schedulerRegistry.doesExist('cron', id)) {
+      throw new BadRequestException(`ID: ${id} のスケジュールが存在しません。`);
+    }
+
+    const job = this.schedulerRegistry.getCronJob(id);
+    job.stop();
+    this.schedulerRegistry.deleteCronJob(id);
+
+    this.prisma.schedule.deleteMany({
+      where: {
+        scheduleId: id,
+      },
+    });
+
+    return 'ok';
   }
 
   async issueGroupLink(replyToken: string, textEventMessage: TextEventMessage) {
