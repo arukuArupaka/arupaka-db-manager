@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { DataTable } from "@/components/dashboard/data-table";
 import { columns } from "@/components/dashboard/textbooks/columns";
-import { LOCAL_DATABASE_URL } from "@/env";
+import { ARUPAKA_DB_URL } from "@/env";
 
 export default async function TextbooksPage() {
   const cookieStore = cookies();
@@ -12,7 +12,7 @@ export default async function TextbooksPage() {
   }
 
   try {
-    const res = await fetch(`${LOCAL_DATABASE_URL}/listing_item/get_all`, {
+    const res = await fetch(`${ARUPAKA_DB_URL}/listing_item/get_all`, {
       headers: {
         Authorization: token,
       },
@@ -23,7 +23,6 @@ export default async function TextbooksPage() {
     }
 
     const textBooks = await res.json();
-    console.log(textBooks);
 
     return (
       <div className="space-y-6">
