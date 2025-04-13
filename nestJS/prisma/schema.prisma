@@ -209,7 +209,7 @@ model Schedule {
   scheduleId String @map("schedule_id")
   minute Int
   hour Int
-  day Int
+  dayOfWeek Int
   message String @map("message")
   description String? @map("description")
 }
