@@ -175,8 +175,6 @@ export class LineBotService {
   async lineSendMessageProcess(events: WebhookEvent[]): Promise<void> {
     const receivedMessage = await this.validateReceivedMessage(events);
 
-    console.log('receivedMessage', receivedMessage);
-
     if (!receivedMessage) {
       return;
     }
