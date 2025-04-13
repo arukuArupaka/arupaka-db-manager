@@ -1,14 +1,16 @@
-import { Weekday } from '@prisma/client';
-import { IsEnum, IsInt, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class CreateScheduleInput {
-  @IsEnum(Weekday)
-  dayOfWeek: number;
+  @IsInt()
+  @IsOptional()
+  weekday: number;
 
   @IsInt()
+  @IsOptional()
   hour: number;
 
   @IsInt()
+  @IsOptional()
   minute: number;
 
   @IsString()

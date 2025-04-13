@@ -8,7 +8,7 @@ import { CronJob } from 'cron';
 import { v4 as uuidv4 } from 'uuid';
 import { CustomPrismaService } from 'src/prisma/prisma.service';
 import { CreateScheduleInput } from './interface/create-schedule.input';
-import { Weekday } from '@prisma/client';
+import { Schedule, Weekday } from '@prisma/client';
 
 @Injectable()
 export class LineBotService {
@@ -63,7 +63,7 @@ export class LineBotService {
     await this.prisma.schedule.create({
       data: {
         scheduleId: id,
-        dayOfWeek: this.convertDayOfWeek(input.dayOfWeek),
+        weekday: this.convertDayOfWeek(input.weekday),
         hour: input.hour,
         minute: input.minute,
         message: input.message,
@@ -72,7 +72,7 @@ export class LineBotService {
     });
 
     // cron式： "分 時 * * 曜日"
-    const cronTime = `${input.minute} ${input.hour} * * ${input.dayOfWeek}`;
+    const cronTime = `${input.minute} ${input.hour} * * ${input.weekday}`;
 
     const job = new CronJob(cronTime, async () => {
       await this.sendMessage({ groupId, textEventMessage: input.message });
@@ -190,16 +190,7 @@ export class LineBotService {
    * スケジュールを全て取得する
    * @returns
    */
-  async getAllSchedule(): Promise<CreateScheduleInput[]> {
-    return await this.prisma.schedule.findMany({
-      select: {
-        scheduleId: true,
-        dayOfWeek: true,
-        hour: true,
-        minute: true,
-        message: true,
-        description: true,
-      },
-    });
+  async getAllSchedule(): Promise<Schedule[]> {
+    return await this.prisma.schedule.findMany();
   }
 }
