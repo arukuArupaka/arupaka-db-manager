@@ -63,7 +63,7 @@ export class LineBotService {
     await this.prisma.schedule.create({
       data: {
         scheduleId: id,
-        weekday: this.convertDayOfWeek(input.weekday),
+        weekday: !!input.weekday ? this.convertDayOfWeek(input.weekday) : null,
         hour: input.hour,
         minute: input.minute,
         message: input.message,
