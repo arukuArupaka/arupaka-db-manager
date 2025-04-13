@@ -2,9 +2,9 @@
 CREATE TABLE "Schedule" (
     "id" TEXT NOT NULL,
     "schedule_id" TEXT NOT NULL,
-    "minute" INTEGER NOT NULL,
-    "hour" INTEGER NOT NULL,
-    "weekday" "Weekday" NOT NULL,
+    "minute" INTEGER,
+    "hour" INTEGER,
+    "weekday" "Weekday",
     "message" TEXT NOT NULL,
     "description" TEXT,
 
