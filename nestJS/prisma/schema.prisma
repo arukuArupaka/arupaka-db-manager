@@ -203,3 +203,10 @@ model DeviceToken {
   deviceToken String  @unique @map("device_token")
   firebaseUserId String? @map("firebase_user_id")
 }
+
+model Schedule {
+  id String @id @default(cuid())
+  scheduleId String @map("schedule_id")
+  executeTime DateTime @map("execute_time")
+  description String? @map("description")
+}
