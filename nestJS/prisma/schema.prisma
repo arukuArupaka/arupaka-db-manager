@@ -209,7 +209,18 @@ model Schedule {
   scheduleId String @map("schedule_id")
   minute Int
   hour Int
-  dayOfWeek Int
+  weekday Weekday
   message String @map("message")
   description String? @map("description")
+}
+
+model CircleMember {
+  id Int @id @default(autoincrement())
+  role String
+  name String
+  lineUserId String? @map("line_user_id")
+  studentNumber String? @map("student_number")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("circle_member")
 }
