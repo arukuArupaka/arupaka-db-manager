@@ -3,6 +3,7 @@ import { WebhookEvent, WebhookRequestBody } from '@line/bot-sdk';
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { LineBotService } from './line-bot.service';
 import { CreateScheduleInput } from './interface/create-schedule.input';
+import { DeleteScheduleInput } from './interface/delete-schedule.input';
 
 @Controller('line-bot')
 export class LineBotController {
@@ -25,6 +26,11 @@ export class LineBotController {
   @Post('create-schedule')
   async createSchedule(@Body() req: CreateScheduleInput): Promise<string> {
     return await this.botService.createSchedule(req);
+  }
+
+  @Post('delete-schedule')
+  async deleteSchedule(@Body() req: DeleteScheduleInput): Promise<string> {
+    return await this.botService.deleteSchedule(req);
   }
 
   @Get('get-all-schedule')

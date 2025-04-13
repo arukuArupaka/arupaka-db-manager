@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { CustomPrismaService } from 'src/prisma/prisma.service';
 import { CreateScheduleInput } from './interface/create-schedule.input';
 import { Schedule, Weekday } from '@prisma/client';
+import { DeleteScheduleInput } from './interface/delete-schedule.input';
 
 @Injectable()
 export class LineBotService {
@@ -88,18 +89,20 @@ export class LineBotService {
    * 指定IDのジョブを削除する。
    * @param id 削除するスケジュールID
    */
-  deleteSchedule(id: string): string {
-    if (!this.schedulerRegistry.doesExist('cron', id)) {
-      throw new BadRequestException(`ID: ${id} のスケジュールが存在しません。`);
+  async deleteSchedule(input: DeleteScheduleInput): Promise<string> {
+    if (!this.schedulerRegistry.doesExist('cron', input.id)) {
+      throw new BadRequestException(
+        `ID: ${input.id} のスケジュールが存在しません。`,
+      );
     }
 
-    const job = this.schedulerRegistry.getCronJob(id);
+    const job = this.schedulerRegistry.getCronJob(input.id);
     job.stop();
-    this.schedulerRegistry.deleteCronJob(id);
+    this.schedulerRegistry.deleteCronJob(input.id);
 
     this.prisma.schedule.deleteMany({
       where: {
-        scheduleId: id,
+        scheduleId: input.id,
       },
     });
 
