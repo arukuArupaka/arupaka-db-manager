@@ -207,9 +207,9 @@ model DeviceToken {
 model Schedule {
   id String @id @default(cuid())
   scheduleId String @map("schedule_id")
-  minute Int
-  hour Int
-  weekday Weekday
+  minute Int?
+  hour Int?
+  weekday Weekday?
   message String @map("message")
   description String? @map("description")
 }
