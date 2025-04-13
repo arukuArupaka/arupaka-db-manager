@@ -72,7 +72,7 @@ export class LineBotService {
     });
 
     // cron式： "分 時 * * 曜日"
-    const cronTime = `${input.minute} ${input.hour} * * ${input.weekday}`;
+    const cronTime = `${input.minute || '*'} ${input.hour || '*'} * * ${input.weekday || '*'}`;
 
     const job = new CronJob(cronTime, async () => {
       await this.sendMessage({ groupId, textEventMessage: input.message });
