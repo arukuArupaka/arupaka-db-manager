@@ -5,32 +5,39 @@ import { EnvironmentsService } from 'src/config/environments.service';
 import { ReceivedMessageValidatePayload } from './interface/received-message-validate.payload';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
+import { v4 as uuidv4 } from 'uuid';
+import { CustomPrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class LineBotService {
   constructor(
     private readonly env: EnvironmentsService,
     private schedulerRegistry: SchedulerRegistry,
+    private readonly prisma: CustomPrismaService,
   ) {}
 
   /**
    * 指定IDのジョブを作成する。
-   * @param id ユニークなスケジュールID
    * @param dayOfWeek 曜日（0:日曜〜6:土曜）
    * @param hour 時（0-23）
    * @param minute 分（0-59）
    */
-  createSchedule(
-    id: string,
-    dayOfWeek: number,
-    hour: number,
-    minute: number,
-  ): string {
+  async createSchedule(dayOfWeek: number, hour: number, minute: number): string {
+    const id = uuidv4();
     if (this.schedulerRegistry.doesExist('cron', id)) {
       throw new BadRequestException(
         `ID: ${id} のスケジュールは既に存在します。`,
       );
     }
+
+    await this.prisma.schedule.create({
+      data: {
+        scheduleId: id,
+        executeTime: ,
+        message: 'スケジュール実行メッセージ',
+        description: 'スケジュール実行の説明',
+      },
+    });
 
     // cron式： "分 時 * * 曜日"
     const cronTime = `${minute} ${hour} * * ${dayOfWeek}`;
