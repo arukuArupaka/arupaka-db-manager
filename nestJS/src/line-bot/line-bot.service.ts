@@ -4,6 +4,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { EnvironmentsService } from 'src/config/environments.service';
 import { ReceivedMessageValidatePayload } from './interface/received-message-validate.payload';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob } from 'cron';
 
 @Injectable()
 export class LineBotService {
@@ -34,13 +35,10 @@ export class LineBotService {
     // cron式： "分 時 * * 曜日"
     const cronTime = `${minute} ${hour} * * ${dayOfWeek}`;
 
-    this.logger.log(`スケジュールID[${id}]を作成: cron ${cronTime}`);
-
     const job = new CronJob(cronTime, () => {
       this.executeTask(id);
     });
 
-    // SchedulerRegistry にジョブを登録
     this.schedulerRegistry.addCronJob(id, job);
     job.start();
 
@@ -94,73 +92,13 @@ export class LineBotService {
 
     const messageFunction = splitedMessageContent[0];
 
-    if (messageFunction === '@利用開始') {
+    if (messageFunction === '@グループID発行') {
       return [
         {
           groupId: groupId,
-          textEventMessage: `承りました。\n利用開始するには、以下のURLにアクセスをし、ユーザー登録、サークル作成を完了させてください。\nhttp://tunagaru.creativegrid.co.jp?aki=${groupId}`,
+          textEventMessage: `${groupId}`,
         },
       ];
-    }
-
-    if (messageFunction === '@アナウンス') {
-      const regionNames: string[] = [];
-      // 〇〇:××　っていう文字列を : で分割して、××の部分を取得
-      const region = splitedMessageContent
-        .filter((el) => el.includes('地域'))
-        .join('')
-        .split(':')[1];
-      const genre = splitedMessageContent
-        .filter((el) => el.includes('ジャンル'))
-        .join('')
-        .split(':')[1];
-      const university = splitedMessageContent
-        .filter((el) => el.includes('大学'))
-        .join('')
-        .split(':')[1];
-      const message = splitedMessageContent
-        .filter((el) => el.includes('メッセージ'))
-        .join('')
-        .split(':')[1];
-
-      const splitedRegion = region ? region.split('&') : [];
-      const genreNames = genre ? genre.split('&') : [];
-      const universityNames = university ? university.split('&') : [];
-
-      splitedRegion.forEach((region) => {
-        // 指定された地域名が地方という単位だった場合
-        if (Object.keys(regionPrefectureMap).includes(region)) {
-          const prefectures: string[] = regionPrefectureMap[region];
-          regionNames.push(...prefectures);
-        } else {
-          regionNames.push(region);
-        }
-      });
-
-      const getCirclesInput: CirclesGetInput = {
-        regionNames: regionNames,
-        genreNames: genreNames,
-        universityNames: universityNames,
-      };
-      const circles = await this.circleService.getCircles(getCirclesInput);
-
-      if (circles.length === 0) {
-        return [
-          {
-            groupId: groupId,
-            textEventMessage: '該当するサークルが見つかりませんでした。',
-          },
-        ];
-      }
-      const responseContent = circles
-        .filter((circle) => circle.lineGroupId !== undefined)
-        .map((circle) => {
-          return {
-            groupId: circle.lineGroupId!,
-            textEventMessage: message,
-          };
-        });
-      return responseContent;
     }
   }
 
