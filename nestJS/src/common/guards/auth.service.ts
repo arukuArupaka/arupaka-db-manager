@@ -4,7 +4,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import admin from 'firebase-admin';
-import * as serviceAccount from './firebaseServiceAccount.json';
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_SDK);
 
 const firebase_params = {
   type: serviceAccount.type,
