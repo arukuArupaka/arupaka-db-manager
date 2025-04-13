@@ -176,9 +176,7 @@ export class LineBotService {
    * @param message
    * @returns
    */
-  private async sendMessage(
-    message?: ReceivedMessageValidatePayload,
-  ): Promise<void> {
+  async sendMessage(message?: ReceivedMessageValidatePayload): Promise<void> {
     const client = this.env.createLinebotClient();
 
     if (!message) {
