@@ -4,7 +4,7 @@ CREATE TABLE "Schedule" (
     "schedule_id" TEXT NOT NULL,
     "minute" INTEGER NOT NULL,
     "hour" INTEGER NOT NULL,
-    "day" INTEGER NOT NULL,
+    "dayOfWeek" INTEGER NOT NULL,
     "message" TEXT NOT NULL,
     "description" TEXT,
 
