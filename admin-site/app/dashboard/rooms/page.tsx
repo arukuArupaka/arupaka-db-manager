@@ -13,7 +13,7 @@ export default async function RoomsPage() {
   }
   //教室を取得するエンドポイントをfetch(まだないけど)
   try {
-    const res = await fetch(`${LOCAL_DATABASE_URL}/`, {
+    /*     const res = await fetch(`${LOCAL_DATABASE_URL}/`, {
       headers: {
         Authorization: token,
       },
@@ -24,6 +24,45 @@ export default async function RoomsPage() {
     }
 
     const rooms: ClassRoom[] = await res.json();
+  */
+    const mockClassRooms: ClassRoom[] = [
+      {
+        id: 1,
+        buildingId: 101,
+        name: "101A",
+        building: "Main Building",
+        lectureClassRooms: ["Math 101", "Physics 201"],
+      },
+      {
+        id: 2,
+        buildingId: 102,
+        name: "102B",
+        building: "Science Hall",
+        lectureClassRooms: ["Biology 101", "Chemistry 102"],
+      },
+      {
+        id: 3,
+        buildingId: 103,
+        name: "103C",
+        building: "Engineering Complex",
+        lectureClassRooms: ["Mechanics 201", "Thermodynamics"],
+      },
+      {
+        id: 4,
+        buildingId: 104,
+        name: "104D",
+        building: "Liberal Arts",
+        lectureClassRooms: ["History 101", "Philosophy 110"],
+      },
+      {
+        id: 5,
+        buildingId: 105,
+        name: "105E",
+        building: "Business School",
+        lectureClassRooms: ["Marketing 101", "Finance 201"],
+      },
+    ];
+
     return (
       <div className="space-y-6">
         <div>
@@ -31,7 +70,7 @@ export default async function RoomsPage() {
           <p className="text-muted-foreground">Manage and view all rooms in the system.</p>
         </div>
         {/* fetchした教室をdataに入れる */}
-        <DataTable columns={columns} data={rooms} />
+        <DataTable columns={columns} data={mockClassRooms} />
       </div>
     );
   } catch (error) {

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { LOCAL_DATABASE_URL } from "@/env";
+import { ARUPAKA_DB_URL } from "@/env";
 
 export default function DataSubmissionPage() {
   const [title, setTitle] = useState("");
@@ -15,7 +15,6 @@ export default function DataSubmissionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isValidJson, setIsValidJson] = useState(true);
 
-  const LOCAL_DATABASE_URL = "http://192.168.0.104:3001";
   const validateJson = (jsonString: string) => {
     if (!jsonString) {
       setIsValidJson(true);
@@ -69,7 +68,7 @@ export default function DataSubmissionPage() {
       data: jsonData,
     };
     try {
-      const res = await fetch(`${LOCAL_DATABASE_URL}/device_token/push_notification`, {
+      const res = await fetch(`${ARUPAKA_DB_URL}/device_token/push_notification`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
