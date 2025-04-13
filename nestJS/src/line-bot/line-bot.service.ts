@@ -100,7 +100,7 @@ export class LineBotService {
     job.stop();
     this.schedulerRegistry.deleteCronJob(input.id);
 
-    this.prisma.schedule.deleteMany({
+    await this.prisma.schedule.deleteMany({
       where: {
         scheduleId: input.id,
       },
