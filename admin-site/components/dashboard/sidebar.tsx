@@ -1,14 +1,23 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Users, Calendar, BookOpen, Image, Bell, Layers, Home, DoorOpen } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import {
+  Users,
+  Calendar,
+  BookOpen,
+  Image,
+  Bell,
+  Layers,
+  Home,
+  DoorOpen,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface SidebarProps {
-  open: boolean
-  setOpen: (open: boolean) => void
-  pathname: string
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  pathname: string;
 }
 
 const navItems = [
@@ -52,14 +61,19 @@ const navItems = [
     href: "/dashboard/rooms",
     icon: DoorOpen,
   },
-]
+  {
+    title: "LINE Bot",
+    href: "/dashboard/line-bot",
+    icon: Bell,
+  },
+];
 
 export function DashboardSidebar({ open, setOpen, pathname }: SidebarProps) {
   return (
     <div
       className={cn(
         "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-white transition-transform duration-300 ease-in-out md:relative md:translate-x-0",
-        open ? "translate-x-0" : "-translate-x-full",
+        open ? "translate-x-0" : "-translate-x-full"
       )}
     >
       <div className="flex h-16 items-center border-b px-4">
@@ -91,7 +105,9 @@ export function DashboardSidebar({ open, setOpen, pathname }: SidebarProps) {
               href={item.href}
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-slate-100",
-                pathname === item.href ? "bg-slate-100 text-blue-600" : "text-slate-700",
+                pathname === item.href
+                  ? "bg-slate-100 text-blue-600"
+                  : "text-slate-700"
               )}
             >
               <item.icon className="h-5 w-5" />
@@ -106,6 +122,5 @@ export function DashboardSidebar({ open, setOpen, pathname }: SidebarProps) {
         </Button>
       </div>
     </div>
-  )
+  );
 }
-
