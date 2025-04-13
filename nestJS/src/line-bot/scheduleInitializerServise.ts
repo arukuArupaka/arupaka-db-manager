@@ -21,7 +21,11 @@ export class ScheduleInitializerService implements OnModuleInit {
     const schedules: Schedule[] = await this.prisma.schedule.findMany();
     const groupId = this.env.GroupId;
     schedules.forEach((schedule) => {
-      const cronTime = `${schedule.minute || '*'} ${schedule.hour || '*'} * * ${schedule.weekday || '*'}`;
+      const minute =
+        schedule.minute === undefined || schedule.minute === null
+          ? '*'
+          : schedule.minute;
+      const cronTime = `${minute} ${schedule.hour ?? '*'} * * ${schedule.weekday ?? '*'}`;
       const job = new CronJob(cronTime, async () => {
         await this.lineBotService.sendMessage({
           groupId,
