@@ -24,6 +24,14 @@ export class EnvironmentsService {
     return lineChannelAccessToken;
   }
 
+  get GroupId(): string {
+    const groupId = this.configService.get('LINE_GROUP_ID');
+    if (!groupId) {
+      throw new Error('Group ID is not defined');
+    }
+    return groupId;
+  }
+
   createLinebotClient() {
     const { MessagingApiClient } = messagingApi;
     const channelAccessToken = this.ChannelAccessToken;

@@ -7,6 +7,8 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { v4 as uuidv4 } from 'uuid';
 import { CustomPrismaService } from 'src/prisma/prisma.service';
+import { CreateScheduleInput } from './interface/create-schedule.input';
+import { Weekday } from '@prisma/client';
 
 @Injectable()
 export class LineBotService {
@@ -17,12 +19,38 @@ export class LineBotService {
   ) {}
 
   /**
+   * 曜日の数値を変換する
+   */
+  convertDayOfWeek(dayOfWeek: number): Weekday {
+    switch (dayOfWeek) {
+      case 0:
+        return 'Sunday';
+      case 1:
+        return 'Monday';
+      case 2:
+        return 'Tuesday';
+      case 3:
+        return 'Wednesday';
+      case 4:
+        return 'Thursday';
+      case 5:
+        return 'Friday';
+      case 6:
+        return 'Saturday';
+      default:
+        throw new BadRequestException('Invalid dayOfWeek value');
+    }
+  }
+
+  /**
    * 指定IDのジョブを作成する。
    * @param dayOfWeek 曜日（0:日曜〜6:土曜）
    * @param hour 時（0-23）
    * @param minute 分（0-59）
+   * @param message メッセージ内容
+   * @param description スケジュールの説明
    */
-  async createSchedule(dayOfWeek: number, hour: number, minute: number): string {
+  async createSchedule(input: CreateScheduleInput): Promise<string> {
     const id = uuidv4();
     if (this.schedulerRegistry.doesExist('cron', id)) {
       throw new BadRequestException(
@@ -30,20 +58,24 @@ export class LineBotService {
       );
     }
 
+    const groupId = this.env.GroupId;
+
     await this.prisma.schedule.create({
       data: {
         scheduleId: id,
-        executeTime: ,
-        message: 'スケジュール実行メッセージ',
-        description: 'スケジュール実行の説明',
+        dayOfWeek: this.convertDayOfWeek(input.dayOfWeek),
+        hour: input.hour,
+        minute: input.minute,
+        message: input.message,
+        description: input.description,
       },
     });
 
     // cron式： "分 時 * * 曜日"
-    const cronTime = `${minute} ${hour} * * ${dayOfWeek}`;
+    const cronTime = `${input.minute} ${input.hour} * * ${input.dayOfWeek}`;
 
-    const job = new CronJob(cronTime, () => {
-      this.executeTask(id);
+    const job = new CronJob(cronTime, async () => {
+      await this.sendMessage({ groupId, textEventMessage: input.message });
     });
 
     this.schedulerRegistry.addCronJob(id, job);
@@ -61,6 +93,11 @@ export class LineBotService {
     });
   }
 
+  /**
+   * LINEから受信したメッセージを検証する
+   * @param events
+   * @returns
+   */
   private async validateReceivedMessage(
     events: WebhookEvent[],
   ): Promise<ReceivedMessageValidatePayload[] | void> {
@@ -109,6 +146,11 @@ export class LineBotService {
     }
   }
 
+  /**
+   * LINEメッセージを送信する
+   * @param message
+   * @returns
+   */
   private async sendMessage(
     message?: ReceivedMessageValidatePayload,
   ): Promise<void> {
@@ -125,6 +167,11 @@ export class LineBotService {
     return;
   }
 
+  /**
+   * ユーザーからのメッセージを受信し、条件に合ったLINEメッセージを送信する
+   * @param events
+   * @returns
+   */
   async lineSendMessageProcess(events: WebhookEvent[]): Promise<void> {
     const receivedMessage = await this.validateReceivedMessage(events);
 
@@ -137,5 +184,22 @@ export class LineBotService {
     );
 
     await Promise.all(sendMessagePromises);
+  }
+
+  /**
+   * スケジュールを全て取得する
+   * @returns
+   */
+  async getAllSchedule(): Promise<CreateScheduleInput[]> {
+    return await this.prisma.schedule.findMany({
+      select: {
+        scheduleId: true,
+        dayOfWeek: true,
+        hour: true,
+        minute: true,
+        message: true,
+        description: true,
+      },
+    });
   }
 }
