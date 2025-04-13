@@ -66,8 +66,8 @@ export class LineBotService {
         scheduleId: id,
         weekday:
           input.weekday === undefined || input.weekday === null
-            ? this.convertDayOfWeek(input.weekday)
-            : null,
+            ? null
+            : this.convertDayOfWeek(input.weekday),
         hour: input.hour,
         minute: input.minute,
         message: input.message,
