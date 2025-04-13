@@ -1,11 +1,16 @@
+import { ARUPAKA_DB_MANAGER_URL } from "@/env";
 import React, { useEffect, useRef } from "react";
 
 export default function DeleteModal({
   isOpenModal,
   setIsOpenModal,
+  fetchSchedules,
+  targetDeleteScheduleId,
 }: {
   isOpenModal: boolean;
   setIsOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
+  fetchSchedules: (method?: string) => Promise<void>;
+  targetDeleteScheduleId: string | null;
 }) {
   // ---------------------------------------------
   // モーダル外をクリックした時の処理
@@ -37,39 +42,66 @@ export default function DeleteModal({
     }
   }, [isOpenModal]);
 
+  const deleteSchedules = async (id: string | null): Promise<void> => {
+    const response = await fetch(
+      `${ARUPAKA_DB_MANAGER_URL}/line-bot/delete-schedule`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "*/*",
+        },
+        body: JSON.stringify({
+          id,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP Error ${response.status}: ${errorText} ${id}`);
+    }
+  };
+
+  if (!isOpenModal) return null;
+
   return (
-    <>
-      {isOpenModal && (
-        <div className="absolute z-10 top-0 left-0 w-full h-full bg-black bg-opacity-50">
-          <div
-            className="relative z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-h-[95vh] md:max-h-[90vh] w-[97vw] md:w-[80vw] p-4 md:p-10 md:pb-20 bg-slate-100 border-neutral-950 shadow-lg rounded-xl overflow-auto"
-            ref={modalRef}
+    <div className="fixed z-10 top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center">
+      <div
+        ref={modalRef}
+        className="relative z-20 bg-slate-100 rounded-xl shadow-lg p-6 w-[90vw] max-w-md overflow-auto"
+      >
+        <h2 className="text-2xl font-bold mb-4">スケジュール削除</h2>
+        <p className="mb-4">
+          本当にスケジュールを削除しますか？この操作は元に戻せません。
+        </p>
+        <div className="flex justify-end">
+          <button
+            className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
+            onClick={async () => {
+              try {
+                await deleteSchedules(targetDeleteScheduleId);
+                console.log("スケジュールが削除されました");
+              } catch (error) {
+                console.error("削除処理中にエラーが発生しました:", error);
+              } finally {
+                await fetchSchedules("delete");
+                setIsOpenModal(false);
+              }
+            }}
           >
-            <div className="flex flex-col items-center justify-center h-full">
-              <h2 className="text-lg font-bold mb-4">Delete Confirmation</h2>
-              <p className="mb-4">Are you sure you want to delete this item?</p>
-              <div className="flex space-x-4">
-                <button
-                  className="bg-red-500 text-white px-4 py-2 rounded"
-                  onClick={() => {
-                    // Handle delete action
-                    console.log("Item deleted");
-                    setIsOpenModal(false);
-                  }}
-                >
-                  Delete
-                </button>
-                <button
-                  className="bg-gray-300 text-black px-4 py-2 rounded"
-                  onClick={() => setIsOpenModal(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
+            削除
+          </button>
+          <button
+            className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
+            onClick={() => {
+              setIsOpenModal(false);
+            }}
+          >
+            キャンセル
+          </button>
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 }

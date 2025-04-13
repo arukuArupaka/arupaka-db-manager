@@ -31,7 +31,7 @@ export default function lineBotPage() {
         return "不明";
     }
   };
-  const fetchSchedules = async (): Promise<void> => {
+  const fetchSchedules = async (method?: string): Promise<void> => {
     const response = await fetch(
       `${ARUPAKA_DB_MANAGER_URL}/line-bot/get-all-schedule`,
       {
@@ -49,16 +49,33 @@ export default function lineBotPage() {
 
     const data: Schedule[] = await response.json();
 
+    console.log("data", data);
+
     const formattedSchedules = data.map((el: Schedule) => ({
       id: el.id,
       scheduleId: el.scheduleId,
       description: el.description,
-      executeTime: `毎週${convertWeekdayToString(el.weekday)}曜日 ${el.hour}:${
-        el.minute
-      }`,
+      executeTime: `毎週${convertWeekdayToString(el.weekday)}曜日 ${el.hour
+        .toString()
+        .padStart(2, "0")}:${el.minute.toString().padStart(2, "0")}`,
       message: el.message,
     }));
-    setSchedules(formattedSchedules);
+
+    if (method === "create") {
+      setSchedules((prev) => {
+        // 新旧のスケジュールを結合する
+        const merged = [...prev, ...formattedSchedules];
+        // scheduleId をキーとしてマップに格納（同じキーがあれば上書き）
+        const uniqueMap = merged.reduce((map, schedule) => {
+          map.set(schedule.scheduleId, schedule);
+          return map;
+        }, new Map<string, (typeof formattedSchedules)[0]>());
+        // Map の値だけの配列を返す
+        return Array.from(uniqueMap.values());
+      });
+    } else if (method === "delete" || method === null || method === undefined) {
+      setSchedules(formattedSchedules);
+    }
   };
   useEffect(() => {
     fetchSchedules();
@@ -76,6 +93,7 @@ export default function lineBotPage() {
         columns={columns}
         data={schedules as unknown as Schedule[]}
         from="line-bot"
+        fetchSchedules={fetchSchedules}
       />
     </div>
   );

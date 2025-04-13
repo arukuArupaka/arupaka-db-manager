@@ -8,9 +8,11 @@ import { ARUPAKA_DB_MANAGER_URL } from "@/env";
 export default function CreateModal({
   isOpenModal,
   setIsOpenModal,
+  fetchSchedules,
 }: {
   isOpenModal: boolean;
   setIsOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
+  fetchSchedules: (method?: string) => Promise<void>;
 }) {
   // フォーム入力状態
   const [weekday, setWeekday] = useState<number>();
@@ -51,6 +53,8 @@ export default function CreateModal({
         `HTTP Error ${response.status}: ${errorText} ${weekday} ${hour} ${minute} ${description} ${message}`
       );
     }
+
+    await fetchSchedules("create");
   };
 
   // モーダル内部の参照

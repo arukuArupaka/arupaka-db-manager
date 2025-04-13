@@ -33,29 +33,38 @@ import {
 import CreateModal from "@/app/dashboard/line-bot/createModal";
 import DetailModal from "@/app/dashboard/line-bot/detailModal";
 import DeleteModal from "@/app/dashboard/line-bot/deleteModal";
+import { ScreenScheduleData } from "./line-bot/columns";
 
 interface DataTableProps<TData, TValue> {
   columns: (
-    setIsOpenDeleteModal: React.Dispatch<React.SetStateAction<boolean>>
+    setIsOpenDeleteModal: React.Dispatch<React.SetStateAction<boolean>>,
+    setTargetDeleteScheduleId: React.Dispatch<
+      React.SetStateAction<string | null>
+    >
   ) => ColumnDef<TData, TValue>[];
   data: TData[];
   from?: string;
+  fetchSchedules: (method?: string) => Promise<void>;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   from,
+  fetchSchedules,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [targetDeleteScheduleId, setTargetDeleteScheduleId] = useState<
+    string | null
+  >(null);
 
   const table = useReactTable({
     data,
-    columns: columns(setIsDeleteModalOpen),
+    columns: columns(setIsDeleteModalOpen, setTargetDeleteScheduleId),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
@@ -185,6 +194,7 @@ export function DataTable<TData, TValue>({
       <CreateModal
         isOpenModal={isCreateModalOpen}
         setIsOpenModal={setIsCreateModalOpen}
+        fetchSchedules={fetchSchedules}
       />
       <DetailModal
         isOpenModal={isDetailModalOpen}
@@ -193,6 +203,8 @@ export function DataTable<TData, TValue>({
       <DeleteModal
         isOpenModal={isDeleteModalOpen}
         setIsOpenModal={setIsDeleteModalOpen}
+        fetchSchedules={fetchSchedules}
+        targetDeleteScheduleId={targetDeleteScheduleId}
       />
       <div className="flex items-center justify-end">
         <Button

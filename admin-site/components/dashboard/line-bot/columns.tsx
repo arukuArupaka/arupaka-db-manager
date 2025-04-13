@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
+import { set } from "react-hook-form";
 
 export type Schedule = {
   id: string;
@@ -31,7 +32,8 @@ export type ScreenScheduleData = {
 };
 
 export const columns = (
-  setIsOpenDeleteModal: React.Dispatch<React.SetStateAction<boolean>>
+  setIsOpenDeleteModal: React.Dispatch<React.SetStateAction<boolean>>,
+  setTargetDeleteScheduleId: React.Dispatch<React.SetStateAction<string | null>>
 ): ColumnDef<Schedule>[] => [
   {
     accessorKey: "scheduleId",
@@ -49,17 +51,23 @@ export const columns = (
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
-      const timetable = row.original;
+      const schedule = row.original;
 
       // アクション用の関数を定義
       const handleDelete = () => {
-        console.log("Delete action triggered for timetable:", timetable.id);
-        // ここで削除処理を実装（例: API呼び出し、状態更新など）
+        console.log(
+          "Delete action triggered for timetable:",
+          schedule.scheduleId
+        );
+        setTargetDeleteScheduleId(schedule.scheduleId);
         setIsOpenDeleteModal(true);
       };
 
       const handleEdit = () => {
-        console.log("Edit action triggered for timetable:", timetable.id);
+        console.log(
+          "Edit action triggered for timetable:",
+          schedule.scheduleId
+        );
         // ここで編集処理を実装（例: モーダルを表示、フォームへ遷移など）
       };
 
