@@ -15,7 +15,7 @@ export class LineBotController {
   }
 
   @Post('send-message')
-  // @UseGuards(LineBotSignatureGuard)
+  @UseGuards(LineBotSignatureGuard)
   async sendMessage(@Body() req: WebhookRequestBody): Promise<string> {
     const events: WebhookEvent[] = req.events;
     console.log('events', events);
