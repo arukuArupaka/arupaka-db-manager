@@ -221,13 +221,13 @@ export class LineBotService {
     return await this.prisma.schedule.findMany();
   }
 
-  async getScheduleDirectly(): Promise<Schedule[] | null> {
+  async getScheduleDirectly(): Promise<any[] | null> {
     const schedules: Schedule[] = await this.prisma.schedule.findMany();
     const jobs = [];
     for (const schedule of schedules) {
       const job = this.schedulerRegistry.getCronJob(schedule.scheduleId);
       jobs.push(job);
     }
-    return schedules;
+    return jobs;
   }
 }
