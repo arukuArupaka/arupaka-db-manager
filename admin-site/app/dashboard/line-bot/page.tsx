@@ -51,13 +51,40 @@ export default function lineBotPage() {
 
     console.log("data", data);
 
+    const convertExecuteTime = (
+      weekday: string,
+      hour: number,
+      minute: number
+    ) => {
+      if (hour === undefined || hour === null) {
+        return `毎週${convertWeekdayToString(weekday)}曜日 ${minute
+          .toString()
+          .padStart(2, "0")}`;
+      }
+      if (minute === undefined || minute === null) {
+        return `毎週${convertWeekdayToString(weekday)}曜日 ${hour
+          .toString()
+          .padStart(2, "0")}`;
+      }
+      if (weekday === undefined || weekday === null) {
+        return `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}`;
+      }
+      return `毎週${convertWeekdayToString(weekday)}曜日 ${hour
+        .toString()
+        .padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+    };
+
     const formattedSchedules = data.map((el: Schedule) => ({
       id: el.id,
       scheduleId: el.scheduleId,
       description: el.description,
-      executeTime: `毎週${convertWeekdayToString(el.weekday)}曜日 ${el.hour
-        .toString()
-        .padStart(2, "0")}:${el.minute.toString().padStart(2, "0")}`,
+      executeTime: `毎週${convertWeekdayToString(el.weekday)}曜日 ${
+        el.hour === undefined || el.hour === null
+          ? null
+          : el.hour.toString().padStart(2, "0")
+      }:${el.minute.toString().padStart(2, "0")}`,
       message: el.message,
     }));
 

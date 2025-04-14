@@ -139,7 +139,6 @@ export default function CreateModal({
               value={weekday}
               onChange={(e) => setWeekday(Number(e.target.value))}
               className="w-full border border-gray-300 rounded p-2"
-              required
             >
               <option value="">選択してください</option>
               <option value="0">日曜日</option>
@@ -165,7 +164,6 @@ export default function CreateModal({
               placeholder="例: 14"
               value={hour ?? ""}
               onChange={(e) => setHour(Number(e.target.value))}
-              required
             />
           </div>
 
@@ -182,7 +180,6 @@ export default function CreateModal({
               placeholder="例: 30"
               value={minute ?? ""}
               onChange={(e) => setMinute(Number(e.target.value))}
-              required
             />
           </div>
 
