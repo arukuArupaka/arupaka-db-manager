@@ -37,4 +37,9 @@ export class LineBotController {
   async getAllSchedule() {
     return await this.botService.getAllSchedule();
   }
+
+  @Get('get-all-schedule-directly')
+  async getAllScheduleDirectly() {
+    return await this.botService.getScheduleDirectly();
+  }
 }

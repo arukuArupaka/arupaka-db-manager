@@ -220,4 +220,14 @@ export class LineBotService {
   async getAllSchedule(): Promise<Schedule[]> {
     return await this.prisma.schedule.findMany();
   }
+
+  async getScheduleDirectly(): Promise<Schedule[] | null> {
+    const schedules: Schedule[] = await this.prisma.schedule.findMany();
+    const jobs = [];
+    for (const schedule of schedules) {
+      const job = this.schedulerRegistry.getCronJob(schedule.scheduleId);
+      jobs.push(job);
+    }
+    return schedules;
+  }
 }
