@@ -300,10 +300,6 @@ export class LineBotService {
         nextDates: job.nextDates().map((date) => date.toJSDate()), // cronの次実行予定
       });
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> 35a06fd (修正)
     return jobs;
   }
 }
