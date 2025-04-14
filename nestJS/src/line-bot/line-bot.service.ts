@@ -81,6 +81,8 @@ export class LineBotService {
 
     const cronTime = `${minute} ${hour} * * ${weekday}`;
 
+    console.log('cronTime', cronTime);
+
     const job = new CronJob(cronTime, async () => {
       await this.sendMessage({ groupId, textEventMessage: input.message });
     });
