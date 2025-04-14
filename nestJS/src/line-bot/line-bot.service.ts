@@ -83,9 +83,15 @@ export class LineBotService {
 
     console.log('cronTime', cronTime);
 
-    const job = new CronJob(cronTime, async () => {
-      await this.sendMessage({ groupId, textEventMessage: input.message });
-    });
+    const job = new CronJob(
+      cronTime,
+      async () => {
+        await this.sendMessage({ groupId, textEventMessage: input.message });
+      },
+      null,
+      false,
+      'Asia/Tokyo',
+    );
 
     this.schedulerRegistry.addCronJob(id, job);
     job.start();
