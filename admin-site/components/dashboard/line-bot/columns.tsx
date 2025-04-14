@@ -48,6 +48,10 @@ export const columns = (
     header: "Execute Time",
   },
   {
+    accessorKey: "message",
+    header: "Message",
+  },
+  {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
