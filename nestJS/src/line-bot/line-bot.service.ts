@@ -75,9 +75,11 @@ export class LineBotService {
       },
     });
 
-    const minute =
-      input.minute === undefined || input.minute === null ? '*' : input.minute;
-    const cronTime = `${minute} ${input.hour ?? '*'} * * ${input.weekday ?? '*'}`;
+    const minute = input.minute ?? '*';
+    const hour = input.hour ?? '*';
+    const weekday = input.weekday ?? '*';
+
+    const cronTime = `${minute} ${hour} * * ${weekday}`;
 
     const job = new CronJob(cronTime, async () => {
       await this.sendMessage({ groupId, textEventMessage: input.message });
@@ -236,7 +238,7 @@ export class LineBotService {
         minute: schedule.minute,
         message: schedule.message,
         running: job.running,
-        nextDates: job.nextDates().map((date) => date.toJSDate()), // cronの次実行予定
+        nextDate: job.nextDates().toJSDate(),
       });
     }
 
