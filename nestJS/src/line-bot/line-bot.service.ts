@@ -224,10 +224,22 @@ export class LineBotService {
   async getScheduleDirectly(): Promise<any[] | null> {
     const schedules: Schedule[] = await this.prisma.schedule.findMany();
     const jobs = [];
+
     for (const schedule of schedules) {
       const job = this.schedulerRegistry.getCronJob(schedule.scheduleId);
-      jobs.push(job);
+
+      jobs.push({
+        scheduleId: schedule.scheduleId,
+        description: schedule.description,
+        weekday: schedule.weekday,
+        hour: schedule.hour,
+        minute: schedule.minute,
+        message: schedule.message,
+        running: job.running,
+        nextDates: job.nextDates().toString(), // cronの次実行予定
+      });
     }
+
     return jobs;
   }
 }
