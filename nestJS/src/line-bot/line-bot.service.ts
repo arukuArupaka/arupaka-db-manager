@@ -236,7 +236,7 @@ export class LineBotService {
         minute: schedule.minute,
         message: schedule.message,
         running: job.running,
-        nextDates: job.nextDates().toString(), // cronの次実行予定
+        nextDates: job.nextDates().map((date) => date.toJSDate()), // cronの次実行予定
       });
     }
 
