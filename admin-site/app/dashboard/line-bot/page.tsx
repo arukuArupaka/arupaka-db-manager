@@ -84,7 +84,11 @@ export default function lineBotPage() {
         el.hour === undefined || el.hour === null
           ? null
           : el.hour.toString().padStart(2, "0")
-      }:${el.minute.toString().padStart(2, "0")}`,
+      }:${
+        el.minute === undefined || el.minute === null
+          ? null
+          : el.minute.toString().padStart(2, "0")
+      }`,
       message: el.message,
     }));
 
