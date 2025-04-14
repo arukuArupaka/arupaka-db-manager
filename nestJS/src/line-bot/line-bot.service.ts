@@ -79,7 +79,7 @@ export class LineBotService {
     const hour = input.hour ?? '*';
     const weekday = input.weekday ?? '*';
 
-    const cronTime = `${minute} ${hour} * * ${weekday}`;
+    const cronTime = `0 ${minute} ${hour} * * ${weekday}`;
 
     console.log('cronTime', cronTime);
 
