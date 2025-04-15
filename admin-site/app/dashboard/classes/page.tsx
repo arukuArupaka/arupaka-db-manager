@@ -14,17 +14,6 @@ export default async function ClassesPage() {
   }
   //授業を取得するエンドポイントをfetch(まだないけど)
   try {
-    /*     const res = await fetch(`${LOCAL_DATABASE_URL}/`, {
-      headers: {
-        Authorization: token,
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch textbooks: ${res.status}`);
-    }
-
-    const classes: Lecture[] = await res.json(); */
     const mockLectures: Lecture[] = [
       {
         id: 1,
@@ -107,7 +96,9 @@ export default async function ClassesPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Class List</h1>
-          <p className="text-muted-foreground">Manage and view all classes in the system.</p>
+          <p className="text-muted-foreground">
+            Manage and view all classes in the system.
+          </p>
         </div>
         <DataTable columns={columns} data={mockLectures} />
       </div>
