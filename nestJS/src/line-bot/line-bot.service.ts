@@ -10,6 +10,7 @@ import { CustomPrismaService } from 'src/prisma/prisma.service';
 import { CreateScheduleInput } from './interface/create-schedule.input';
 import { Schedule, Weekday } from '@prisma/client';
 import { DeleteScheduleInput } from './interface/delete-schedule.input';
+import { UpdateScheduleInput } from './interface/update-schedule.input';
 
 @Injectable()
 export class LineBotService {
@@ -95,6 +96,56 @@ export class LineBotService {
 
     this.schedulerRegistry.addCronJob(id, job);
     job.start();
+
+    return 'ok';
+  }
+
+  async updateSchedule(input: UpdateScheduleInput): Promise<string> {
+    const schedule = await this.prisma.schedule.findUnique({
+      where: {
+        scheduleId: input.id,
+      },
+    });
+    if (!schedule) {
+      throw new BadRequestException('Schedule not found');
+    }
+
+    await this.prisma.schedule.update({
+      where: {
+        scheduleId: input.id,
+      },
+      data: {
+        weekday:
+          input.weekday === undefined || input.weekday === null
+            ? null
+            : this.convertDayOfWeek(input.weekday),
+        hour: input.hour,
+        minute: input.minute,
+        message: input.message,
+        description: input.description,
+      },
+    });
+
+    this.schedulerRegistry.deleteCronJob(input.id);
+
+    const minute = input.minute ?? '*';
+    const hour = input.hour ?? '*';
+    const weekday = input.weekday ?? '*';
+    const cronTime = `0 ${minute} ${hour} q* * ${weekday}`;
+
+    const job = new CronJob(
+      cronTime,
+      async () => {
+        await this.sendMessage({
+          groupId: this.env.GroupId,
+          textEventMessage: input.message,
+        });
+      },
+      null,
+      false,
+      'Asia/Tokyo',
+    );
+    this.schedulerRegistry.addCronJob(input.id, job);
 
     return 'ok';
   }
