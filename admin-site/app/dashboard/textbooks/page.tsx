@@ -16,6 +16,7 @@ export default async function TextbooksPage() {
       headers: {
         Authorization: token,
       },
+      cache: "no-store",
     });
 
     if (!res.ok) {
@@ -28,7 +29,9 @@ export default async function TextbooksPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Textbook Market</h1>
-          <p className="text-muted-foreground">Manage and view all textbooks listed for sale.</p>
+          <p className="text-muted-foreground">
+            Manage and view all textbooks listed for sale.
+          </p>
         </div>
         <DataTable columns={columns} data={textBooks} />
       </div>
