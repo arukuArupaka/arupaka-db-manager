@@ -13,18 +13,6 @@ export default async function RoomsPage() {
   }
   //教室を取得するエンドポイントをfetch(まだないけど)
   try {
-    /*     const res = await fetch(`${LOCAL_DATABASE_URL}/`, {
-      headers: {
-        Authorization: token,
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch textbooks: ${res.status}`);
-    }
-
-    const rooms: ClassRoom[] = await res.json();
-  */
     const mockClassRooms: ClassRoom[] = [
       {
         id: 1,
@@ -67,7 +55,9 @@ export default async function RoomsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Room List</h1>
-          <p className="text-muted-foreground">Manage and view all rooms in the system.</p>
+          <p className="text-muted-foreground">
+            Manage and view all rooms in the system.
+          </p>
         </div>
         {/* fetchした教室をdataに入れる */}
         <DataTable columns={columns} data={mockClassRooms} />
