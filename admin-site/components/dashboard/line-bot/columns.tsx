@@ -11,9 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
-import { set } from "react-hook-form";
 
-export type Schedule = {
+export interface Schedule {
   id: string;
   scheduleId: string;
   description: string;
@@ -21,20 +20,20 @@ export type Schedule = {
   hour: number;
   weekday: string;
   message: string;
-};
+}
 
-export type ScreenScheduleData = {
-  id: string;
-  scheduleId: string;
-  description: string;
+export interface ScreenScheduleData extends Schedule {
   executeTime: string;
-  message: string;
-};
+}
 
 export const columns = (
   setIsOpenDeleteModal: React.Dispatch<React.SetStateAction<boolean>>,
-  setTargetDeleteScheduleId: React.Dispatch<React.SetStateAction<string | null>>
-): ColumnDef<Schedule>[] => [
+  setIsOpenUpdateModal: React.Dispatch<React.SetStateAction<boolean>>,
+  setTargetSchedule: React.Dispatch<
+    React.SetStateAction<ScreenScheduleData | null>
+  >,
+  schedulesMap: Map<string, ScreenScheduleData>
+): ColumnDef<ScreenScheduleData>[] => [
   {
     accessorKey: "scheduleId",
     header: "Schedule ID",
@@ -63,7 +62,7 @@ export const columns = (
           "Delete action triggered for timetable:",
           schedule.scheduleId
         );
-        setTargetDeleteScheduleId(schedule.scheduleId);
+        setTargetSchedule(schedule);
         setIsOpenDeleteModal(true);
       };
 
@@ -72,7 +71,8 @@ export const columns = (
           "Edit action triggered for timetable:",
           schedule.scheduleId
         );
-        // ここで編集処理を実装（例: モーダルを表示、フォームへ遷移など）
+        setTargetSchedule(schedulesMap.get(schedule.scheduleId) ?? null);
+        setIsOpenUpdateModal(true);
       };
 
       return (

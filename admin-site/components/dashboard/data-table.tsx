@@ -12,7 +12,7 @@ import {
   type ColumnFiltersState,
   getFilteredRowModel,
 } from "@tanstack/react-table";
-import { ChevronDown, Delete } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,41 +30,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import CreateModal from "@/app/dashboard/line-bot/createModal";
-import DetailModal from "@/app/dashboard/line-bot/detailModal";
-import DeleteModal from "@/app/dashboard/line-bot/deleteModal";
-import { ScreenScheduleData } from "./line-bot/columns";
 
 interface DataTableProps<TData, TValue> {
-  columns: (
-    setIsOpenDeleteModal: React.Dispatch<React.SetStateAction<boolean>>,
-    setTargetDeleteScheduleId: React.Dispatch<
-      React.SetStateAction<string | null>
-    >
-  ) => ColumnDef<TData, TValue>[];
+  columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  from?: string;
-  fetchSchedules: (method?: string) => Promise<void>;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  from,
-  fetchSchedules,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [targetDeleteScheduleId, setTargetDeleteScheduleId] = useState<
-    string | null
-  >(null);
 
   const table = useReactTable({
     data,
-    columns: columns(setIsDeleteModalOpen, setTargetDeleteScheduleId),
+    columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
@@ -77,75 +58,49 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  const nameColumn = table
-    .getAllColumns()
-    .find((column) => column.id === "name");
-
   return (
-    <div>
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Input
           placeholder="Filter..."
-          value={
-            nameColumn ? (nameColumn.getFilterValue() as string) ?? "" : ""
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
-          onChange={(event) => {
-            // "name" 列が存在する場合のみ setFilterValue を呼ぶ
-            if (nameColumn) {
-              nameColumn.setFilterValue(event.target.value);
-            }
-          }}
           className="max-w-sm"
         />
-        <div>
-          {from === "line-bot" && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="justify-self-end"
-              onClick={() => setIsCreateModalOpen(true)}
-            >
-              Create
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="ml-auto">
+              Columns <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
-          )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table
+              .getAllColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup, index) => (
-              <TableRow
-                key={headerGroup.id}
-                onClick={
-                  index !== 0 ? () => setIsDetailModalOpen(true) : undefined
-                }
-              >
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
@@ -191,22 +146,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <CreateModal
-        isOpenModal={isCreateModalOpen}
-        setIsOpenModal={setIsCreateModalOpen}
-        fetchSchedules={fetchSchedules}
-      />
-      <DetailModal
-        isOpenModal={isDetailModalOpen}
-        setIsOpenModal={setIsDetailModalOpen}
-      />
-      <DeleteModal
-        isOpenModal={isDeleteModalOpen}
-        setIsOpenModal={setIsDeleteModalOpen}
-        fetchSchedules={fetchSchedules}
-        targetDeleteScheduleId={targetDeleteScheduleId}
-      />
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end space-x-2">
         <Button
           variant="outline"
           size="sm"

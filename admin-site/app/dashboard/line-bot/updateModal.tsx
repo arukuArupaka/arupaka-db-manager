@@ -4,27 +4,46 @@ import React, { useState, useEffect, useRef, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createSchedules } from "@/functions/line-bot/createSchedules";
+import {
+  Schedule,
+  ScreenScheduleData,
+} from "@/components/dashboard/line-bot/columns";
+import { convertWeekday } from "@/functions/line-bot/convertWeekday";
+import { set } from "react-hook-form";
+import { updateSchedules } from "@/functions/line-bot/updateSchedules";
 
-export default function CreateModal({
-  from,
+export default function UpdateModal({
   isOpenModal,
   setIsOpenModal,
   fetchSchedules,
+  info,
 }: {
-  from?: string;
   isOpenModal: boolean;
   setIsOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
   fetchSchedules: (method?: string) => Promise<void>;
+  info: ScreenScheduleData | null;
 }) {
   // フォーム入力状態
-  const [weekday, setWeekday] = useState<number>();
-  const [hour, setHour] = useState<number>();
-  const [minute, setMinute] = useState<number>();
-  const [description, setDescription] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
+  const [weekday, setWeekday] = useState<number | undefined>(
+    convertWeekday(info?.weekday ?? "")
+  );
+  const [hour, setHour] = useState<number | undefined>(info?.hour);
+  const [minute, setMinute] = useState<number | undefined>(info?.minute);
+  const [description, setDescription] = useState<string>(
+    info?.description ?? ""
+  );
+  const [message, setMessage] = useState<string>(info?.message ?? "");
 
   // モーダル内部の参照
   const modalRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setWeekday(convertWeekday(info?.weekday ?? ""));
+    setHour(info?.hour);
+    setMinute(info?.minute);
+    setDescription(info?.description ?? "");
+    setMessage(info?.message ?? "");
+  }, [info]);
 
   // モーダル外クリック検知で閉じる処理
   useEffect(() => {
@@ -57,7 +76,8 @@ export default function CreateModal({
     try {
       // 入力値でAPI呼び出し
       console.log("データ", weekday, hour, minute, description, message);
-      await createSchedules(
+      await updateSchedules(
+        info?.scheduleId as string,
         weekday as number,
         hour as number,
         minute as number,
@@ -94,7 +114,7 @@ export default function CreateModal({
         ref={modalRef}
         className="relative z-20 bg-slate-100 rounded-xl shadow-lg p-6 w-[90vw] max-w-md overflow-auto"
       >
-        <h2 className="text-2xl font-bold mb-4">スケジュール作成</h2>
+        <h2 className="text-2xl font-bold mb-4">スケジュール編集</h2>
         <form onSubmit={handleSubmit}>
           {/* 曜日の選択 */}
           <div className="mb-4">
