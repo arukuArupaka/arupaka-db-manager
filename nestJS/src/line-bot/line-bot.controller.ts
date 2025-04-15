@@ -4,6 +4,7 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { LineBotService } from './line-bot.service';
 import { CreateScheduleInput } from './interface/create-schedule.input';
 import { DeleteScheduleInput } from './interface/delete-schedule.input';
+import { UpdateScheduleInput } from './interface/update-schedule.input';
 
 @Controller('line-bot')
 export class LineBotController {
@@ -31,6 +32,11 @@ export class LineBotController {
   @Post('delete-schedule')
   async deleteSchedule(@Body() req: DeleteScheduleInput): Promise<string> {
     return await this.botService.deleteSchedule(req);
+  }
+
+  @Post('update-schedule')
+  async updateSchedule(@Body() req: UpdateScheduleInput): Promise<string> {
+    return await this.botService.updateSchedule(req);
   }
 
   @Get('get-all-schedule')
