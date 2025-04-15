@@ -131,7 +131,7 @@ export class LineBotService {
     const minute = input.minute ?? '*';
     const hour = input.hour ?? '*';
     const weekday = input.weekday ?? '*';
-    const cronTime = `0 ${minute} ${hour} q* * ${weekday}`;
+    const cronTime = `0 ${minute} ${hour} * * ${weekday}`;
 
     const job = new CronJob(
       cronTime,
