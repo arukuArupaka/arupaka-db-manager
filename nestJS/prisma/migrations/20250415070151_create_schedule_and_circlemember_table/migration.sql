@@ -22,3 +22,6 @@ CREATE TABLE "circle_member" (
 
     CONSTRAINT "circle_member_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Schedule_schedule_id_key" ON "Schedule"("schedule_id");
