@@ -139,6 +139,7 @@ export class GoogleFormService {
       throw error;
     }
   }
+<<<<<<< HEAD
 
   /**
    * 入力された日付が1週間以内かどうかを判定するメソッド
@@ -229,4 +230,6 @@ export class GoogleFormService {
       win: 'draw',
     };
   }
+=======
+>>>>>>> 51df6c7 (googleフォームとの連携完了)
 }
