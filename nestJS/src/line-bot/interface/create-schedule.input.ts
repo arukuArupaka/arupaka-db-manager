@@ -10,4 +10,9 @@ export interface CreateScheduleInput {
   description: string;
 
   category: string;
+
+  resultSendWeekday?: number;
+  resultSendHour?: number;
+  resultSendMinute?: number;
+  function: Promise<void>;
 }

@@ -86,9 +86,7 @@ export class LineBotService {
 
     const job = new CronJob(
       cronTime,
-      async () => {
-        await this.receiveCreateRequest(input);
-      },
+      async () => await input.function,
       null,
       false,
       'Asia/Tokyo',
@@ -103,6 +101,11 @@ export class LineBotService {
   async createForm(input: any) {
     const formInfo = await this.googleFormService.createSampleForm();
     const message = `${input.message}\n${formInfo.publicUrl}`;
+    const formId = formInfo.editId;
+    await this.prisma.schedule.updateMany({
+      where: { scheduleId: input.id },
+      data: { formId: formId },
+    });
     return await this.sendMessage({
       groupId: input.groupId,
       textEventMessage: message,
@@ -112,13 +115,17 @@ export class LineBotService {
   async receiveCreateRequest(input: ReceivedCreateRequestInput) {
     const groupId = this.env.GroupId;
     if (input.category === 'MESSAGE') {
-      return await this.sendMessage({
-        groupId,
-        textEventMessage: input.message,
+      await this.createSchedule({
+        ...input,
+        function: this.sendMessage({
+          groupId,
+          textEventMessage: input.message,
+        }),
       });
     }
     if (input.category === 'FORM') {
-      return await this.createForm(input);
+      await this.createSchedule({ ...input, function: this.createForm(input) });
+      await this.createSchedule({ ...input, function: this.createForm(input) });
     }
   }
 
