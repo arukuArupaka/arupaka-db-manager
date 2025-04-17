@@ -9,7 +9,6 @@ CREATE TABLE "Schedule" (
     "description" TEXT,
     "category" TEXT NOT NULL,
     "form_id" TEXT,
-    "result_schedule_id" TEXT,
     "form_group_id" TEXT,
 
     CONSTRAINT "Schedule_pkey" PRIMARY KEY ("id")
@@ -29,3 +28,6 @@ CREATE TABLE "circle_member" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Schedule_schedule_id_key" ON "Schedule"("schedule_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Schedule_form_group_id_key" ON "Schedule"("form_group_id");
