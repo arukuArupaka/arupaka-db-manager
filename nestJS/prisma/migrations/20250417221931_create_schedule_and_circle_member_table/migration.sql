@@ -10,6 +10,7 @@ CREATE TABLE "Schedule" (
     "category" TEXT NOT NULL,
     "form_id" TEXT,
     "result_schedule_id" TEXT,
+    "form_group_id" TEXT,
 
     CONSTRAINT "Schedule_pkey" PRIMARY KEY ("id")
 );
