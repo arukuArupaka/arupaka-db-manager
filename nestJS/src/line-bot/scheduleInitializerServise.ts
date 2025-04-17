@@ -19,7 +19,6 @@ export class ScheduleInitializerService implements OnModuleInit {
 
   async onModuleInit() {
     const schedules: Schedule[] = await this.prisma.schedule.findMany();
-    const groupId = this.env.GroupId;
     const convertWeekday = (weekday: string): number => {
       switch (weekday) {
         case 'Sunday':
@@ -49,12 +48,22 @@ export class ScheduleInitializerService implements OnModuleInit {
           ? '*'
           : convertWeekday(schedule.weekday);
       const cronTime = `${minute} ${schedule.hour ?? '*'} * * ${weekday}`;
-      const job = new CronJob(cronTime, async () => {
-        await this.lineBotService.sendMessage({
-          groupId,
-          textEventMessage: schedule.message,
-        });
-      });
+      const job = new CronJob(
+        cronTime,
+        async () => {
+          await this.lineBotService.receiveCreateRequest({
+            weekday: convertWeekday(schedule.weekday),
+            hour: schedule.hour,
+            minute: schedule.minute,
+            message: schedule.message,
+            description: schedule.description,
+            category: schedule.category,
+          });
+        },
+        null,
+        false,
+        'Asia/Tokyo',
+      );
       this.schedulerRegistry.addCronJob(schedule.scheduleId, job);
       job.start();
     });
