@@ -8,7 +8,7 @@ CREATE TABLE "Schedule" (
     "message" TEXT NOT NULL,
     "description" TEXT,
     "category" TEXT NOT NULL,
-    "form_id" TEXT NOT NULL,
+    "form_id" TEXT,
 
     CONSTRAINT "Schedule_pkey" PRIMARY KEY ("id")
 );
