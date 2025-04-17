@@ -214,8 +214,7 @@ model Schedule {
   description String? @map("description")
   category String @map("category")
   formId String? @map("form_id")
-  resultScheduleId String? @map("result_schedule_id")
-  formGroupId String? @map("form_group_id")
+  formGroupId String? @unique @map("form_group_id")
 }
 
 model CircleMember {
