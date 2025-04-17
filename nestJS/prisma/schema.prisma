@@ -210,6 +210,9 @@ model Schedule {
   minute Int?
   hour Int?
   weekday Weekday?
+  resultSendMinute Int? @map("result_send_minute")
+  resultSendHour Int? @map("result_send_hour")
+  resultSendWeekday Weekday? @map("result_send_weekday")
   message String @map("message")
   description String? @map("description")
   category String @map("category")
