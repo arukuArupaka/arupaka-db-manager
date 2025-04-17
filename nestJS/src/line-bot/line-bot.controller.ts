@@ -52,9 +52,4 @@ export class LineBotController {
   async getAllScheduleDirectly() {
     return await this.botService.getScheduleDirectly();
   }
-
-  @Get('get-form-responses')
-  async getFormResponses() {
-    return await this.googleFormService.aggregateFormResponses();
-  }
 }
