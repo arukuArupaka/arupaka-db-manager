@@ -2,17 +2,13 @@
 import { WebhookEvent, WebhookRequestBody } from '@line/bot-sdk';
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { LineBotService } from './line-bot.service';
-import { CreateScheduleInput } from './interface/create-schedule.input';
 import { DeleteScheduleInput } from './interface/delete-schedule.input';
 import { UpdateScheduleInput } from './interface/update-schedule.input';
-import { GoogleFormService } from './google-form.service';
+import { ReceivedCreateRequestInput } from './interface/receive-create-request.input';
 
 @Controller('line-bot')
 export class LineBotController {
-  constructor(
-    private readonly botService: LineBotService,
-    private readonly googleFormService: GoogleFormService,
-  ) {}
+  constructor(private readonly botService: LineBotService) {}
 
   @Get()
   async APITest() {
@@ -29,8 +25,10 @@ export class LineBotController {
   }
 
   @Post('create-schedule')
-  async createSchedule(@Body() req: CreateScheduleInput): Promise<string> {
-    return await this.botService.createSchedule(req);
+  async createSchedule(
+    @Body() req: ReceivedCreateRequestInput,
+  ): Promise<string> {
+    return await this.botService.receiveCreateRequest(req);
   }
 
   @Post('delete-schedule')

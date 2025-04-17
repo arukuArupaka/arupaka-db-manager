@@ -212,21 +212,21 @@ export class GoogleFormService {
     if (result.sat > result.sun) {
       return {
         totalResponses: totalResponses,
-        responses: result.sat,
-        win: 'sat',
+        responses: result,
+        win: '土曜日に決まりました',
       };
     }
     if (result.sat < result.sun) {
       return {
         totalResponses: totalResponses,
-        responses: result.sun,
-        win: 'sun',
+        responses: result,
+        win: '日曜日に決まりました',
       };
     }
     return {
       totalResponses: totalResponses,
-      responses: result.sat,
-      win: 'draw',
+      responses: result,
+      win: '同数でした',
     };
   }
 }

@@ -10,4 +10,10 @@ export interface ReceivedCreateRequestInput {
   description: string;
 
   category: string;
+
+  resultSendWeekday?: number;
+
+  resultSendHour?: number;
+
+  resultSendMinute?: number;
 }

@@ -13,6 +13,8 @@ import { DeleteScheduleInput } from './interface/delete-schedule.input';
 import { UpdateScheduleInput } from './interface/update-schedule.input';
 import { ReceivedCreateRequestInput } from './interface/receive-create-request.input';
 import { GoogleFormService } from './google-form.service';
+import { SendFormResultInput } from './interface/send-form-result.input';
+import { CreateFormInput } from './interface/create-form.input';
 
 @Injectable()
 export class LineBotService {
@@ -27,7 +29,8 @@ export class LineBotService {
    * 曜日の数値を変換する
    */
   convertDayOfWeek(dayOfWeek: number): Weekday {
-    switch (dayOfWeek) {
+    console.log(dayOfWeek);
+    switch (Number(dayOfWeek)) {
       case 0:
         return 'Sunday';
       case 1:
@@ -49,7 +52,7 @@ export class LineBotService {
 
   /**
    * 指定IDのジョブを作成する。
-   * @param dayOfWeek 曜日（0:日曜〜6:土曜）
+   * @param weekday 曜日（0:日曜〜6:土曜）
    * @param hour 時（0-23）
    * @param minute 分（0-59）
    * @param message メッセージ内容
@@ -86,7 +89,7 @@ export class LineBotService {
 
     const job = new CronJob(
       cronTime,
-      async () => await input.function,
+      async () => await input.handler({ ...input, id }),
       null,
       false,
       'Asia/Tokyo',
@@ -98,7 +101,7 @@ export class LineBotService {
     return 'ok';
   }
 
-  async createForm(input: any) {
+  async createForm(input: CreateFormInput) {
     const formInfo = await this.googleFormService.createSampleForm();
     const message = `${input.message}\n${formInfo.publicUrl}`;
     const formId = formInfo.editId;
@@ -112,21 +115,57 @@ export class LineBotService {
     });
   }
 
+  /**
+   * フォームの回答結果を取得して、LINEメッセージを送信する
+   * @param input
+   */
+  async sendFormResult(input: SendFormResultInput) {
+    const formId = input.formId;
+    const formResult =
+      await this.googleFormService.collectAttendanceFormResponses(formId);
+    const resultMessage = `回答結果を発表します。\n土曜日：${formResult.responses.sat}\n日曜日：${formResult.responses.sun}\nよって、${formResult.win}`;
+    return await this.sendMessage({
+      groupId: input.groupId,
+      textEventMessage: resultMessage,
+    });
+  }
+
+  /**
+   * createリクエストの受け皿で、カテゴリによって処理を分ける
+   * @param input
+   */
   async receiveCreateRequest(input: ReceivedCreateRequestInput) {
     const groupId = this.env.GroupId;
     if (input.category === 'MESSAGE') {
       await this.createSchedule({
         ...input,
-        function: this.sendMessage({
-          groupId,
-          textEventMessage: input.message,
-        }),
+        handler: async (input) => {
+          await this.sendMessage({
+            groupId,
+            textEventMessage: input.message,
+          });
+        },
       });
     }
+    // フォーム作成のリクエストが来た場合、フォーム作成と結果送信のスケジュールを作成
     if (input.category === 'FORM') {
-      await this.createSchedule({ ...input, function: this.createForm(input) });
-      await this.createSchedule({ ...input, function: this.createForm(input) });
+      await this.createSchedule({
+        ...input,
+        handler: async (input: CreateFormInput) => await this.createForm(input),
+      });
+      await this.createSchedule({
+        ...input,
+        weekday: input.resultSendWeekday + input.weekday,
+        hour: input.resultSendHour,
+        minute: input.resultSendMinute,
+        description: 'フォーム結果送信',
+        message: '回答結果を発表します。',
+        handler: async (input: SendFormResultInput) =>
+          await this.sendFormResult(input),
+      });
     }
+
+    return 'ok';
   }
 
   async updateSchedule(input: UpdateScheduleInput): Promise<string> {
@@ -175,6 +214,7 @@ export class LineBotService {
       'Asia/Tokyo',
     );
     this.schedulerRegistry.addCronJob(input.id, job);
+    job.start();
 
     return 'ok';
   }

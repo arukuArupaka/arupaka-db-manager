@@ -11,8 +11,5 @@ export interface CreateScheduleInput {
 
   category: string;
 
-  resultSendWeekday?: number;
-  resultSendHour?: number;
-  resultSendMinute?: number;
-  function: Promise<void>;
+  handler: (input: any) => Promise<void>;
 }
