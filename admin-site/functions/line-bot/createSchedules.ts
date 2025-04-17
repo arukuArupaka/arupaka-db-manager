@@ -7,7 +7,10 @@ export const createSchedules = async (
   description: string,
   message: string,
   category: string,
-  fetchSchedules: (method?: string) => Promise<void>
+  fetchSchedules: (method?: string) => Promise<void>,
+  resultSendWeekday?: number,
+  resultSendHour?: number,
+  resultSendMinute?: number
 ): Promise<void> => {
   const response = await fetch(
     `${ARUPAKA_DB_MANAGER_URL}/line-bot/create-schedule`,
@@ -24,6 +27,9 @@ export const createSchedules = async (
         description,
         message,
         category,
+        resultSendWeekday,
+        resultSendHour,
+        resultSendMinute,
       }),
     }
   );

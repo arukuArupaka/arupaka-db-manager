@@ -4,7 +4,20 @@ import React, { useState, useEffect, useRef, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createSchedules } from "@/functions/line-bot/createSchedules";
-import { set } from "react-hook-form";
+import { set, useForm, useWatch } from "react-hook-form";
+
+interface FormValues {
+  date: string;
+  weekday: number;
+  hour: number;
+  minute: number;
+  description: string;
+  message: string;
+  category: string;
+  resultSendWeekday: number;
+  resultSendHour: number;
+  resultSendMinute: number;
+}
 
 export default function CreateModal({
   from,
@@ -18,12 +31,14 @@ export default function CreateModal({
   fetchSchedules: (method?: string) => Promise<void>;
 }) {
   // フォーム入力状態
-  const [weekday, setWeekday] = useState<number>();
-  const [hour, setHour] = useState<number>();
-  const [minute, setMinute] = useState<number>();
-  const [description, setDescription] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
+
+  const { register, handleSubmit, control } = useForm<FormValues>();
+
+  const category = useWatch({
+    control,
+    name: "category",
+    defaultValue: "",
+  });
 
   // モーダル内部の参照
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -54,36 +69,23 @@ export default function CreateModal({
   }, [isOpenModal]);
 
   // フォーム送信時の処理
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
+  const onSubmit = async (data: FormValues) => {
     try {
       // 入力値でAPI呼び出し
-      console.log("データ", weekday, hour, minute, description, message);
       await createSchedules(
-        weekday as number,
-        hour as number,
-        minute as number,
-        description,
-        message,
+        Number(data.weekday),
+        Number(data.hour),
+        Number(data.minute),
+        data.description,
+        data.message,
         category,
-        fetchSchedules
+        fetchSchedules,
+        Number(data.resultSendWeekday),
+        Number(data.resultSendHour),
+        Number(data.resultSendMinute)
       );
-      console.log("作成されたスケジュールデータ:", {
-        weekday,
-        hour,
-        minute,
-        description,
-        message,
-      });
       // フォーム送信後、モーダルを閉じる
       setIsOpenModal(false);
-      // フォーム状態をリセットする
-      setWeekday(undefined);
-      setHour(undefined);
-      setMinute(undefined);
-      setDescription("");
-      setMessage("");
-      setCategory("");
     } catch (error) {
       console.error(error);
     }
@@ -99,7 +101,7 @@ export default function CreateModal({
         className="relative z-20 bg-slate-100 rounded-xl shadow-lg p-6 w-[90vw] max-w-md overflow-auto"
       >
         <h2 className="text-2xl font-bold mb-4">スケジュール作成</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           {/* 曜日の選択 */}
           <div className="mb-4">
             <label htmlFor="weekday" className="block mb-1">
@@ -107,8 +109,7 @@ export default function CreateModal({
             </label>
             <select
               id="weekday"
-              value={weekday}
-              onChange={(e) => setWeekday(Number(e.target.value))}
+              {...register("weekday", { required: true })}
               className="w-full border border-gray-300 rounded p-2"
             >
               <option value="">選択してください</option>
@@ -133,8 +134,7 @@ export default function CreateModal({
               min="0"
               max="23"
               placeholder="例: 14"
-              value={hour ?? ""}
-              onChange={(e) => setHour(Number(e.target.value))}
+              {...register("hour", { required: false })}
             />
           </div>
 
@@ -149,8 +149,7 @@ export default function CreateModal({
               min="0"
               max="59"
               placeholder="例: 30"
-              value={minute ?? ""}
-              onChange={(e) => setMinute(Number(e.target.value))}
+              {...register("minute", { required: false })}
             />
           </div>
 
@@ -163,9 +162,7 @@ export default function CreateModal({
               id="description"
               type="text"
               placeholder="スケジュールの説明"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
+              {...register("description", { required: true })}
             />
           </div>
 
@@ -178,8 +175,7 @@ export default function CreateModal({
               id="message"
               type="text"
               placeholder="表示するメッセージ"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              {...register("message", { required: true })}
               required
             />
           </div>
@@ -190,8 +186,7 @@ export default function CreateModal({
             </label>
             <select
               id="weekday"
-              value={weekday}
-              onChange={(e) => setCategory(e.target.value)}
+              {...register("category", { required: true })}
               className="w-full border border-gray-300 rounded p-2"
             >
               <option value="">選択してください</option>
@@ -199,6 +194,62 @@ export default function CreateModal({
               <option value="FORM">アンケート作成</option>
             </select>
           </div>
+          {category === "FORM" && (
+            <div className="mb-4">
+              <label htmlFor="form" className="mb-4">
+                結果送信日時
+              </label>
+              <div className="flex flex-row items-center gap-4">
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1">
+                    <select
+                      id="weekday"
+                      {...register("resultSendWeekday", { required: false })}
+                      className="w-[100px] border border-gray-300 rounded p-2"
+                    >
+                      <option value="">日</option>
+                      <option value="0">0</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                      <option value="6">6</option>
+                    </select>
+                    <span className="text-sm text-gray-500">日後の</span>
+                  </div>
+                </div>
+
+                {/* 時間入力 */}
+                <div className="flex flex-col">
+                  <input
+                    id="hour"
+                    type="number"
+                    min={0}
+                    max={23}
+                    placeholder="時間"
+                    {...register("resultSendHour", { required: false })}
+                    className="w-16 border rounded p-2"
+                  />
+                </div>
+                <span className="text-sm text-gray-500">時</span>
+
+                {/* 分入力 */}
+                <div className="flex flex-col">
+                  <input
+                    id="minute"
+                    type="number"
+                    min={0}
+                    max={59}
+                    placeholder="分"
+                    {...register("resultSendMinute", { required: false })}
+                    className="w-16 border rounded p-2"
+                  />
+                </div>
+                <span className="text-sm text-gray-500">分</span>
+              </div>
+            </div>
+          )}
 
           {/* ボタン群 */}
           <div className="flex justify-end space-x-2">
