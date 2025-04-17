@@ -213,6 +213,7 @@ model Schedule {
   message String @map("message")
   description String? @map("description")
   category String @map("category")
+  formId String @map("form_id")
 }
 
 model CircleMember {
