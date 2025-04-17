@@ -23,7 +23,12 @@ export class GoogleFormService {
     const authClient = new JWT({
       email: clientEmail,
       key: privateKey,
-      scopes: ['https://www.googleapis.com/auth/forms.responses.readonly'],
+      scopes: [
+        'https://www.googleapis.com/auth/forms.body', // フォーム作成・編集
+        'https://www.googleapis.com/auth/forms.responses.readonly', // 回答取得
+        // もし Drive に保存するなら以下も
+        'https://www.googleapis.com/auth/drive.file',
+      ],
     });
 
     await authClient.authorize();
@@ -57,6 +62,7 @@ export class GoogleFormService {
       formId,
       requestBody: {
         requests: [
+          // 自由記述の質問
           {
             createItem: {
               location: { index: 0 },
@@ -71,6 +77,7 @@ export class GoogleFormService {
               },
             },
           },
+          // チェックボックス（複数選択）の質問
           {
             createItem: {
               location: { index: 1 },
@@ -79,13 +86,15 @@ export class GoogleFormService {
                 questionItem: {
                   question: {
                     required: true,
-                    checkboxQuestion: {
+                    choiceQuestion: {
+                      // RADIO（単一選択）ではなく CHECKBOX（複数選択）を指定
+                      type: 'CHECKBOX',
                       options: [
                         { value: '土曜日参加可能' },
                         { value: '日曜日参加可能' },
                       ],
                     },
-                  } as any,
+                  },
                 },
               },
             },
@@ -95,19 +104,7 @@ export class GoogleFormService {
     });
     this.logger.log('質問を追加しました');
 
-    await formsClient.forms.setPublishSettings({
-      formId,
-      requestBody: {
-        publishSettings: {
-          publishState: {
-            isPublished: true,
-            isAcceptingResponses: true,
-          },
-        },
-      },
-    });
-    this.logger.log('公開設定を反映しました');
-
+    // 3) URL を取得して返却
     const { data: form } = await formsClient.forms.get({ formId });
     const publicUrl = form.responderUri!;
     this.logger.log(`公開フォームURL: ${publicUrl}`);

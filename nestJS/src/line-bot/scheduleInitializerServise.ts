@@ -1,69 +1,85 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { CustomPrismaService } from 'src/prisma/prisma.service';
-import { CronJob } from 'cron';
 import { Schedule } from '@prisma/client';
+import { CronJob } from 'cron';
 import { LineBotService } from './line-bot.service';
+import { CustomPrismaService } from 'src/prisma/prisma.service';
 import { EnvironmentsService } from 'src/config/environments.service';
 
 @Injectable()
 export class ScheduleInitializerService implements OnModuleInit {
-  private readonly logger = new Logger(ScheduleInitializerService.name);
-
   constructor(
-    private readonly prisma: CustomPrismaService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly lineBotService: LineBotService,
+    private readonly prisma: CustomPrismaService,
     private readonly env: EnvironmentsService,
   ) {}
 
   async onModuleInit() {
-    const schedules: Schedule[] = await this.prisma.schedule.findMany();
-    const convertWeekday = (weekday: string): number => {
-      switch (weekday) {
-        case 'Sunday':
-          return 0;
-        case 'Monday':
-          return 1;
-        case 'Tuesday':
-          return 2;
-        case 'Wednesday':
-          return 3;
-        case 'Thursday':
-          return 4;
-        case 'Friday':
-          return 5;
-        case 'Saturday':
-          return 6;
+    const schedules = await this.prisma.schedule.findMany();
+    const groupId = this.env.GroupId;
+
+    // → handler は同期関数で、Schedule を受け取って onTick 関数を返す
+    const handler = (input: Schedule): (() => Promise<void>) => {
+      switch (input.category) {
+        case 'RESULT':
+          return async () => {
+            await this.lineBotService.sendFormResult({
+              formId: input.formId!,
+              groupId,
+              id: input.id,
+              message: input.message,
+            });
+          };
+        case 'MESSAGE':
+          return async () => {
+            await this.lineBotService.sendMessage({
+              groupId,
+              textEventMessage: input.message,
+            });
+          };
+        case 'FORM':
+          return async () => {
+            await this.lineBotService.createForm({
+              groupId,
+              id: input.scheduleId,
+              message: input.message,
+            });
+          };
+        default:
+          // 安全策としてダミー関数
+          return async () => {};
       }
     };
-    schedules.forEach((schedule) => {
-      const minute =
-        schedule.minute === undefined || schedule.minute === null
-          ? '*'
-          : schedule.minute;
 
+    schedules.forEach((schedule) => {
+      // 秒フィールドを先頭に追加 (cron ライブラリの仕様)
+      const minute = schedule.minute ?? '*';
+      const hour = schedule.hour ?? '*';
       const weekday =
-        schedule.weekday === undefined || schedule.weekday === null
+        schedule.weekday == null
           ? '*'
-          : convertWeekday(schedule.weekday);
-      const cronTime = `${minute} ${schedule.hour ?? '*'} * * ${weekday}`;
+          : [
+              'Sunday',
+              'Monday',
+              'Tuesday',
+              'Wednesday',
+              'Thursday',
+              'Friday',
+              'Saturday',
+            ].indexOf(schedule.weekday);
+
+      const cronTime = `0 ${minute} ${hour} * * ${weekday}`;
+      const onTick = handler(schedule); // <- ここでコールバック関数を生成
+
       const job = new CronJob(
         cronTime,
-        async () => {
-          await this.lineBotService.receiveCreateRequest({
-            weekday: convertWeekday(schedule.weekday),
-            hour: schedule.hour,
-            minute: schedule.minute,
-            message: schedule.message,
-            description: schedule.description,
-            category: schedule.category,
-          });
-        },
+        onTick, // Promise<void> を返す async 関数
         null,
         false,
         'Asia/Tokyo',
       );
+
       this.schedulerRegistry.addCronJob(schedule.scheduleId, job);
       job.start();
     });

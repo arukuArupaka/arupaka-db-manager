@@ -102,9 +102,11 @@ export class LineBotService {
   }
 
   async createForm(input: CreateFormInput) {
+    console.log('createForm');
     const formInfo = await this.googleFormService.createSampleForm();
     const message = `${input.message}\n${formInfo.publicUrl}`;
     const formId = formInfo.editId;
+    console.log(formId);
     await this.prisma.schedule.updateMany({
       where: { scheduleId: input.id },
       data: { formId: formId },
@@ -160,6 +162,7 @@ export class LineBotService {
         minute: input.resultSendMinute,
         description: 'フォーム結果送信',
         message: '回答結果を発表します。',
+        category: 'RESULT',
         handler: async (input: SendFormResultInput) =>
           await this.sendFormResult(input),
       });
