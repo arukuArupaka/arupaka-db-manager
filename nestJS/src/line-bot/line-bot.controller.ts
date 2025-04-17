@@ -5,14 +5,10 @@ import { LineBotService } from './line-bot.service';
 import { CreateScheduleInput } from './interface/create-schedule.input';
 import { DeleteScheduleInput } from './interface/delete-schedule.input';
 import { UpdateScheduleInput } from './interface/update-schedule.input';
-import { GoogleFormService } from './google-form.service';
 
 @Controller('line-bot')
 export class LineBotController {
-  constructor(
-    private readonly botService: LineBotService,
-    private readonly googleFormService: GoogleFormService,
-  ) {}
+  constructor(private readonly botService: LineBotService) {}
 
   @Get()
   async APITest() {
@@ -51,10 +47,5 @@ export class LineBotController {
   @Get('get-all-schedule-directly')
   async getAllScheduleDirectly() {
     return await this.botService.getScheduleDirectly();
-  }
-
-  @Get('get-form-responses')
-  async getFormResponses() {
-    return await this.googleFormService.aggregateFormResponses();
   }
 }
