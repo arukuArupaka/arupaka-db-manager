@@ -212,6 +212,7 @@ model Schedule {
   weekday Weekday?
   message String @map("message")
   description String? @map("description")
+  category String @map("category")
 }
 
 model CircleMember {

@@ -7,6 +7,7 @@ CREATE TABLE "Schedule" (
     "weekday" "Weekday",
     "message" TEXT NOT NULL,
     "description" TEXT,
+    "category" TEXT NOT NULL,
 
     CONSTRAINT "Schedule_pkey" PRIMARY KEY ("id")
 );
