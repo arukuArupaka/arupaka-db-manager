@@ -7,6 +7,10 @@ import { ListingItemCreateInput } from './interface/listing-item-create.input';
 @Controller('listing_item')
 export class SearchItemController {
   constructor(private searchItemService: SearchItemService) {}
+  @Get('get_all')
+  async getAllItems(): Promise<ListingItemPayload[]> {
+    return await this.searchItemService.getAllItems();
+  }
 
   @Get('search_item')
   async searchItems(
