@@ -30,7 +30,12 @@ export class LineBotController {
 
   @Post('create-schedule')
   async createSchedule(@Body() req: CreateScheduleInput): Promise<string> {
-    return await this.botService.createSchedule(req);
+    return await this.botService.createSendMessageSchedule(req);
+  }
+
+  @Post('create-form')
+  async createForm(@Body() req: any): Promise<string> {
+    return await this.botService.createForm(req);
   }
 
   @Post('delete-schedule')

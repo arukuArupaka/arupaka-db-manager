@@ -11,6 +11,8 @@ import { CreateScheduleInput } from './interface/create-schedule.input';
 import { Schedule, Weekday } from '@prisma/client';
 import { DeleteScheduleInput } from './interface/delete-schedule.input';
 import { UpdateScheduleInput } from './interface/update-schedule.input';
+import { ReceivedCreateRequestInput } from './interface/receive-create-request.input';
+import { GoogleFormService } from './google-form.service';
 
 @Injectable()
 export class LineBotService {
@@ -18,6 +20,7 @@ export class LineBotService {
     private readonly env: EnvironmentsService,
     private schedulerRegistry: SchedulerRegistry,
     private readonly prisma: CustomPrismaService,
+    private readonly googleFormService: GoogleFormService,
   ) {}
 
   /**
@@ -60,8 +63,6 @@ export class LineBotService {
       );
     }
 
-    const groupId = this.env.GroupId;
-
     await this.prisma.schedule.create({
       data: {
         scheduleId: id,
@@ -87,7 +88,7 @@ export class LineBotService {
     const job = new CronJob(
       cronTime,
       async () => {
-        await this.sendMessage({ groupId, textEventMessage: input.message });
+        await this.receiveCreateRequest(input);
       },
       null,
       false,
@@ -98,6 +99,28 @@ export class LineBotService {
     job.start();
 
     return 'ok';
+  }
+
+  async createForm(input: any) {
+    const formInfo = await this.googleFormService.createSampleForm();
+    const message = `${input.message}\n${formInfo.publicUrl}`;
+    return await this.sendMessage({
+      groupId: input.groupId,
+      textEventMessage: message,
+    });
+  }
+
+  async receiveCreateRequest(input: ReceivedCreateRequestInput) {
+    const groupId = this.env.GroupId;
+    if (input.category === 'MESSAGE') {
+      return await this.sendMessage({
+        groupId,
+        textEventMessage: input.message,
+      });
+    }
+    if (input.category === 'FORM') {
+      return await this.createForm(input);
+    }
   }
 
   async updateSchedule(input: UpdateScheduleInput): Promise<string> {

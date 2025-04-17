@@ -1,4 +1,4 @@
-export interface CreateScheduleInput {
+export interface ReceivedCreateRequestInput {
   weekday: number;
 
   hour: number;
