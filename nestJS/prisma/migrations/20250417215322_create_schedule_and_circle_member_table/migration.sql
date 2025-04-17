@@ -9,6 +9,7 @@ CREATE TABLE "Schedule" (
     "description" TEXT,
     "category" TEXT NOT NULL,
     "form_id" TEXT,
+    "result_schedule_id" TEXT,
 
     CONSTRAINT "Schedule_pkey" PRIMARY KEY ("id")
 );
