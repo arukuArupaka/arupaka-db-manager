@@ -28,6 +28,3 @@ CREATE TABLE "circle_member" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Schedule_schedule_id_key" ON "Schedule"("schedule_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Schedule_form_group_id_key" ON "Schedule"("form_group_id");
