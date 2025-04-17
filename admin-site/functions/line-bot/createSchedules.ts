@@ -6,6 +6,7 @@ export const createSchedules = async (
   minute: number,
   description: string,
   message: string,
+  category: string,
   fetchSchedules: (method?: string) => Promise<void>
 ): Promise<void> => {
   const response = await fetch(
@@ -22,6 +23,7 @@ export const createSchedules = async (
         minute,
         description,
         message,
+        category,
       }),
     }
   );

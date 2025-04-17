@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createSchedules } from "@/functions/line-bot/createSchedules";
+import { set } from "react-hook-form";
 
 export default function CreateModal({
   from,
@@ -22,6 +23,7 @@ export default function CreateModal({
   const [minute, setMinute] = useState<number>();
   const [description, setDescription] = useState<string>("");
   const [message, setMessage] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
 
   // モーダル内部の参照
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -63,6 +65,7 @@ export default function CreateModal({
         minute as number,
         description,
         message,
+        category,
         fetchSchedules
       );
       console.log("作成されたスケジュールデータ:", {
@@ -80,6 +83,7 @@ export default function CreateModal({
       setMinute(undefined);
       setDescription("");
       setMessage("");
+      setCategory("");
     } catch (error) {
       console.error(error);
     }
@@ -178,6 +182,22 @@ export default function CreateModal({
               onChange={(e) => setMessage(e.target.value)}
               required
             />
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="weekday" className="block mb-1">
+              カテゴリ
+            </label>
+            <select
+              id="weekday"
+              value={weekday}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full border border-gray-300 rounded p-2"
+            >
+              <option value="">選択してください</option>
+              <option value="MESSAGE">メッセージのみ</option>
+              <option value="FORM">アンケート作成</option>
+            </select>
           </div>
 
           {/* ボタン群 */}
