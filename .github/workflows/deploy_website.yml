@@ -27,6 +27,7 @@ jobs:
         with:
           node-version: '18'
           cache: 'pnpm'
+          cache-dependency-path: 'admin-site'   # ← ここを追加
 
       # ③ 依存をインストールしてビルド
       - name: Install dependencies & build
