@@ -313,6 +313,7 @@ export class LineBotService {
 
     // ユーザーからのメッセージが来た場合は定型文を返す
     if (sourceType === 'user') {
+      console.log(event.source.userId);
       return [
         {
           groupId: event.source.userId,
