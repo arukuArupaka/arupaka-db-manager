@@ -29,7 +29,6 @@ export class LineBotService {
    * 曜日の数値を変換する
    */
   convertDayOfWeek(dayOfWeek: number): Weekday {
-    console.log(dayOfWeek);
     switch (Number(dayOfWeek)) {
       case 0:
         return 'Sunday';
@@ -78,6 +77,7 @@ export class LineBotService {
         message: input.message,
         description: input.description,
         category: input.category,
+        formGroupId: input.formGroupId,
       },
     });
 
@@ -108,7 +108,7 @@ export class LineBotService {
     const formId = formInfo.editId;
     console.log(formId);
     await this.prisma.schedule.updateMany({
-      where: { scheduleId: input.id },
+      where: { formGroupId: input.formGroupId },
       data: { formId: formId },
     });
     return await this.sendMessage({
@@ -122,9 +122,13 @@ export class LineBotService {
    * @param input
    */
   async sendFormResult(input: SendFormResultInput) {
-    const formId = input.formId;
+    const formResultInfo = await this.prisma.schedule.findMany({
+      where: { formGroupId: input.formGroupId },
+    });
     const formResult =
-      await this.googleFormService.collectAttendanceFormResponses(formId);
+      await this.googleFormService.collectAttendanceFormResponses(
+        formResultInfo[0].formId!,
+      );
     const resultMessage = `回答結果を発表します。\n土曜日：${formResult.responses.sat}\n日曜日：${formResult.responses.sun}\nよって、${formResult.win}`;
     return await this.sendMessage({
       groupId: input.groupId,
@@ -138,6 +142,7 @@ export class LineBotService {
    */
   async receiveCreateRequest(input: ReceivedCreateRequestInput) {
     const groupId = this.env.GroupId;
+    console.log(groupId);
     if (input.category === 'MESSAGE') {
       await this.createSchedule({
         ...input,
@@ -151,8 +156,10 @@ export class LineBotService {
     }
     // フォーム作成のリクエストが来た場合、フォーム作成と結果送信のスケジュールを作成
     if (input.category === 'FORM') {
+      const formGroupId = uuidv4();
       await this.createSchedule({
         ...input,
+        formGroupId,
         handler: async (input: CreateFormInput) => await this.createForm(input),
       });
       await this.createSchedule({
@@ -163,6 +170,7 @@ export class LineBotService {
         description: 'フォーム結果送信',
         message: '回答結果を発表します。',
         category: 'RESULT',
+        formGroupId,
         handler: async (input: SendFormResultInput) =>
           await this.sendFormResult(input),
       });
@@ -172,6 +180,7 @@ export class LineBotService {
   }
 
   async updateSchedule(input: UpdateScheduleInput): Promise<string> {
+    const groupId = this.env.GroupId;
     const schedule = await this.prisma.schedule.findUnique({
       where: {
         scheduleId: input.id,
@@ -204,18 +213,42 @@ export class LineBotService {
     const weekday = input.weekday ?? '*';
     const cronTime = `0 ${minute} ${hour} * * ${weekday}`;
 
-    const job = new CronJob(
-      cronTime,
-      async () => {
-        await this.sendMessage({
-          groupId: this.env.GroupId,
-          textEventMessage: input.message,
-        });
-      },
-      null,
-      false,
-      'Asia/Tokyo',
-    );
+    const handler = (input: Schedule): (() => Promise<void>) => {
+      switch (input.category) {
+        case 'RESULT':
+          return async () => {
+            await this.sendFormResult({
+              groupId,
+              id: input.id,
+              message: input.message,
+              formGroupId: input.formGroupId,
+            });
+          };
+        case 'MESSAGE':
+          return async () => {
+            await this.sendMessage({
+              groupId,
+              textEventMessage: input.message,
+            });
+          };
+        case 'FORM':
+          return async () => {
+            await this.createForm({
+              groupId,
+              id: input.scheduleId,
+              message: input.message,
+              formGroupId: input.formGroupId,
+            });
+          };
+        default:
+          // 安全策としてダミー関数
+          return async () => {};
+      }
+    };
+
+    const onTick = handler(schedule); // <- ここでコールバック関数を生成
+
+    const job = new CronJob(cronTime, onTick, null, false, 'Asia/Tokyo');
     this.schedulerRegistry.addCronJob(input.id, job);
     job.start();
 

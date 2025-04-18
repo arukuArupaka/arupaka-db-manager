@@ -25,10 +25,10 @@ export class ScheduleInitializerService implements OnModuleInit {
         case 'RESULT':
           return async () => {
             await this.lineBotService.sendFormResult({
-              formId: input.formId!,
               groupId,
               id: input.id,
               message: input.message,
+              formGroupId: input.formGroupId,
             });
           };
         case 'MESSAGE':
@@ -44,6 +44,7 @@ export class ScheduleInitializerService implements OnModuleInit {
               groupId,
               id: input.scheduleId,
               message: input.message,
+              formGroupId: input.formGroupId,
             });
           };
         default:

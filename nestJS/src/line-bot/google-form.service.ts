@@ -157,13 +157,13 @@ export class GoogleFormService {
   formatAttendanceFormResponse(res: any): AttendanceFormAnswerPayload {
     const totalResponses = res.totalResponses;
     const answers = res.responses;
+    const answer = {};
 
     answers.forEach((ans: any) => {
-      const keys = Object.keys(ans);
-      const answer = {};
+      const keys = Object.keys(ans.answers);
 
-      const nameValue = ans[keys[0]];
-      const ContentValue = ans[keys[1]];
+      const nameValue = ans.answers[keys[0]];
+      const ContentValue = ans.answers[keys[1]];
       if (
         nameValue !== null &&
         nameValue !== undefined &&
@@ -172,8 +172,7 @@ export class GoogleFormService {
       ) {
         const name = nameValue.textAnswers?.answers[0]?.value;
         const content = ContentValue.textAnswers?.answers.map((item: any) => {
-          if (!!this.isWithinLastWeek(ans.lastlastSubmittedTime))
-            return item.value;
+          return item.value;
         });
         answer[name] = content;
       }
@@ -181,7 +180,7 @@ export class GoogleFormService {
 
     return {
       totalResponses: totalResponses,
-      responses: answers,
+      responses: answer,
     };
   }
 
@@ -198,31 +197,30 @@ export class GoogleFormService {
       formatAttendanceFormResponse.responses,
     ).flatMap((item: any) => item);
 
-    const result = contents.reduce(
-      (acc: any, curr: any) => {
-        if (curr === '土曜日参加可能') acc.sat++;
-        else acc.sun++;
-      },
-      { sat: 0, sun: 0 },
-    );
+    const sat = contents.filter(
+      (item: string) => item === '土曜日参加可能',
+    ).length;
+    const sun = contents.filter(
+      (item: string) => item === '日曜日参加可能',
+    ).length;
 
-    if (result.sat > result.sun) {
+    if (sat > sun) {
       return {
         totalResponses: totalResponses,
-        responses: result,
+        responses: { sat, sun },
         win: '土曜日に決まりました',
       };
     }
-    if (result.sat < result.sun) {
+    if (sat < sun) {
       return {
         totalResponses: totalResponses,
-        responses: result,
+        responses: { sat, sun },
         win: '日曜日に決まりました',
       };
     }
     return {
       totalResponses: totalResponses,
-      responses: result,
+      responses: { sat, sun },
       win: '同数でした',
     };
   }

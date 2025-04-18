@@ -12,4 +12,6 @@ export interface CreateScheduleInput {
   category: string;
 
   handler: (input: any) => Promise<void>;
+
+  formGroupId?: string;
 }
