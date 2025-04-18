@@ -7,6 +7,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { SearchItemModule } from './listing-item/listing-item.module';
 import { DeviceTokenModule } from './device-token/device-token.module';
 import { AuthModule } from './common/guards/auth.module';
+import { LineBotModule } from './line-bot/line-bot.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { AuthModule } from './common/guards/auth.module';
     SearchItemModule,
     DeviceTokenModule,
     AuthModule,
+    LineBotModule,
+    ScheduleModule.forRoot(),
   ],
   providers: [AppService, PrismaServiceProvider],
   exports: [PrismaServiceProvider],
