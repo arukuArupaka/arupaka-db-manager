@@ -158,22 +158,27 @@ export class GoogleFormService {
     const totalResponses = res.totalResponses;
     const answers = res.responses;
     const answer = {};
+    console.log('answers', answers);
 
     answers.forEach((ans: any) => {
       const keys = Object.keys(ans.answers);
 
-      const nameValue = ans.answers[keys[0]];
-      const ContentValue = ans.answers[keys[1]];
+      const nameValue = ans.answers[keys[1]];
+      const contentValue = ans.answers[keys[0]];
+      console.log('contentValue', contentValue);
+      console.log('nameValue', nameValue);
       if (
         nameValue !== null &&
         nameValue !== undefined &&
-        ContentValue !== null &&
-        ContentValue !== undefined
+        contentValue !== null &&
+        contentValue !== undefined
       ) {
         const name = nameValue.textAnswers?.answers[0]?.value;
-        const content = ContentValue.textAnswers?.answers.map((item: any) => {
-          return item.value;
-        });
+        console.log('name', name);
+        const content = contentValue.textAnswers?.answers.map(
+          (item: any) => item.value,
+        );
+        console.log('content', content);
         answer[name] = content;
       }
     });
@@ -196,6 +201,10 @@ export class GoogleFormService {
     const contents = Object.values(
       formatAttendanceFormResponse.responses,
     ).flatMap((item: any) => item);
+
+    console.log('totalResponses', formatAttendanceFormResponse);
+
+    console.log('contents', contents);
 
     const sat = contents.filter(
       (item: string) => item === '土曜日参加可能',
