@@ -1,5 +1,7 @@
+# .github/workflows/deploy.yml
 name: deploy website
 
+# main ブランチの admin-site 配下変更時／手動実行でトリガー
 on:
   push:
     branches:
@@ -11,32 +13,35 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      # ① pnpm CLI を先にセットアップ（v4 を使う）
+    steps:
+      # 1) リポジトリ全体を checkout
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2) pnpm CLI を先にセットアップ（v4 を使用）
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 8
-          run_install: false   # 依存のインストールは後でやる
+          run_install: false
 
-      # ② Node.js をセットアップ & pnpm キャッシュを有効化
+      # 3) Node.js 環境をセットアップ＆pnpm キャッシュを有効化
       - name: Setup Node.js & pnpm cache
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'pnpm'
-          cache-dependency-path: 'admin-site'   # ← ここを追加
+          cache-dependency-path: 'admin-site'   # ← これで admin-site/pnpm-lock.yaml を参照
 
-      # ③ 依存をインストールしてビルド
+      # 4) admin-site 配下で依存インストール＆ビルド
       - name: Install dependencies & build
         working-directory: ./admin-site
         run: |
           pnpm install --frozen-lockfile
           pnpm run build
 
-      # ④ Vercel にデプロイ
+      # 5) Vercel へデプロイ
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20
         with:
