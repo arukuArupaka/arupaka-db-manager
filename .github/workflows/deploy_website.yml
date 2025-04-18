@@ -2,7 +2,7 @@ name: deploy website
 on:
   push:
     branches:
-      - develop
+      - main
     paths:
       - 'admin-site/**'
 jobs:
