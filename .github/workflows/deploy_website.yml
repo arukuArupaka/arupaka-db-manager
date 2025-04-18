@@ -1,13 +1,11 @@
 name: deploy website
 
 on:
-  # main ブランチの admin-site 以下変更時に自動実行
   push:
     branches:
       - main
     paths:
       - 'admin-site/**'
-  # 手動トリガー用
   workflow_dispatch:
 
 jobs:
@@ -16,23 +14,28 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # ① pnpm CLI を先にセットアップ（v4 を使う）
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+          run_install: false   # 依存のインストールは後でやる
+
+      # ② Node.js をセットアップ & pnpm キャッシュを有効化
       - name: Setup Node.js & pnpm cache
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'pnpm'
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
+      # ③ 依存をインストールしてビルド
       - name: Install dependencies & build
         working-directory: ./admin-site
         run: |
           pnpm install --frozen-lockfile
           pnpm run build
 
+      # ④ Vercel にデプロイ
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20
         with:
