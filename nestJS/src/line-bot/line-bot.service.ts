@@ -354,10 +354,26 @@ export class LineBotService {
       return;
     }
 
-    client.pushMessage({
-      to: message.groupId,
-      messages: [{ type: 'text', text: message.textEventMessage }],
+    console.log(message.groupId);
+
+    await client.pushMessage({
+      to: message.groupId, // console.log で actual groupId を確認しておく
+      messages: [
+        {
+          type: 'textV2',
+          text: '{everyone}\n' + message.textEventMessage,
+          substitution: {
+            everyone: {
+              type: 'mention',
+              mentionee: {
+                type: 'all', // 全員メンション
+              },
+            },
+          },
+        },
+      ],
     });
+
     return;
   }
 
