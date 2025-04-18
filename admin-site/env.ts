@@ -1,0 +1,10 @@
+export const API_KEY = "AIzaSyCOIXzHbyclc6m67n8PmjGoDH3k4tQ-8SI";
+export const AUTH_DOMAIN = "admin-user-e794a.firebaseapp.com";
+export const PROJECT_ID = "admin-user-e794a";
+export const STORAGE_BUCKET = "admin-user-e794a.appspot.com";
+export const MESSAGING_SENDER_ID = "1082110399464";
+export const APP_ID = "1:1082110399464:web:0590e56dd6e44b98028a5d";
+export const MEASUREMENT_ID = "G-YF8LTFHR6B";
+export const LOCAL_DATABASE_URL = "http://localhost:3001";
+export const LOCAL_SITE_URL = "http://localhost:3000";
+export const ARUPAKA_DB_MANAGER_URL = "http://localhost:3001";
