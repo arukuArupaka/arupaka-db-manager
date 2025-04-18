@@ -7,4 +7,5 @@ export const APP_ID = "1:1082110399464:web:0590e56dd6e44b98028a5d";
 export const MEASUREMENT_ID = "G-YF8LTFHR6B";
 export const LOCAL_DATABASE_URL = "http://localhost:3001";
 export const LOCAL_SITE_URL = "http://localhost:3000";
+export const ARUPAKA_DB_URL = "https://db-manager-api.arupaka.uk";
 export const ARUPAKA_DB_MANAGER_URL = "http://localhost:3001";
