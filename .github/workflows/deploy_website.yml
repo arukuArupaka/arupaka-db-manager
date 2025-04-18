@@ -10,26 +10,20 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. リポジトリをチェックアウト（main ブランチが自動で取られます）
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v3
 
-      # 2. Node.js 環境をセットアップ
-      - name: Setup Node.js
+      - name: Setup Node.js & pnpm cache
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'pnpm'
 
-      # 3. admin-site フォルダ内でインストール＆ビルド
-      - name: Build admin-site
+      - name: Install dependencies & build
         working-directory: ./admin-site
         run: |
-          npm ci
-          npm run build
+          pnpm install --frozen-lockfile
+          pnpm run build
 
-      # 4. Vercel へデプロイ
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20
         with:
@@ -38,4 +32,3 @@ jobs:
           vercel-org-id:     ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           working-directory: ./admin-site
-
