@@ -29,7 +29,7 @@ jobs:
         run: |
           cd admin-site
           npm install
-          npm run build:posts
+          npm run build
       - uses: amondnet/vercel-action@v20
         with:
           # GitHub Actions の Secrets で作成した値を参照する形で
