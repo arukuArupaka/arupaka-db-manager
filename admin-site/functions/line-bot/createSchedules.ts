@@ -1,5 +1,3 @@
-import { ARUPAKA_DB_MANAGER_URL } from "@/env";
-
 export const createSchedules = async (
   weekday: number,
   hour: number,
@@ -13,7 +11,7 @@ export const createSchedules = async (
   resultSendMinute?: number
 ): Promise<void> => {
   const response = await fetch(
-    `${ARUPAKA_DB_MANAGER_URL}/line-bot/create-schedule`,
+    `${process.env.NEXT_PUBLIC_ARUPAKA_DB_MANAGER_URL}/line-bot/create-schedule`,
     {
       method: "POST",
       headers: {

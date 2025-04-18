@@ -2,7 +2,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { DataTable } from "@/components/dashboard/data-table";
 import { columns } from "@/components/dashboard/textbooks/columns";
-import { ARUPAKA_DB_URL } from "@/env";
 
 export default async function TextbooksPage() {
   const cookieStore = cookies();
@@ -12,12 +11,15 @@ export default async function TextbooksPage() {
   }
 
   try {
-    const res = await fetch(`${ARUPAKA_DB_URL}/listing_item/get_all`, {
-      headers: {
-        Authorization: token,
-      },
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_ARUPAKA_DB_URL}/listing_item/get_all`,
+      {
+        headers: {
+          Authorization: token,
+        },
+        cache: "no-store",
+      }
+    );
 
     if (!res.ok) {
       throw new Error(`Failed to fetch textbooks: ${res.status}`);

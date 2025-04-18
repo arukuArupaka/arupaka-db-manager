@@ -1,7 +1,6 @@
 import { DataTable } from "@/components/dashboard/data-table";
 import { columns } from "@/components/dashboard/rooms/columns";
 import { ClassRoom } from "@/components/interface/ClassRoom";
-import { LOCAL_DATABASE_URL } from "@/env";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 export default async function RoomsPage() {

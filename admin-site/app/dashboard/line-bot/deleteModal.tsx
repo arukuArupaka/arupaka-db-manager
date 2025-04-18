@@ -1,4 +1,3 @@
-import { ARUPAKA_DB_MANAGER_URL } from "@/env";
 import React, { useEffect, useRef } from "react";
 
 export default function DeleteModal({
@@ -44,7 +43,7 @@ export default function DeleteModal({
 
   const deleteSchedules = async (id: string | null): Promise<void> => {
     const response = await fetch(
-      `${ARUPAKA_DB_MANAGER_URL}/line-bot/delete-schedule`,
+      `${process.env.NEXT_PUBLIC_ARUPAKA_DB_MANAGER_URL}/line-bot/delete-schedule`,
       {
         method: "POST",
         headers: {

@@ -1,5 +1,3 @@
-import { ARUPAKA_DB_MANAGER_URL } from "@/env";
-
 export const updateSchedules = async (
   id: string,
   weekday: number,
@@ -10,7 +8,7 @@ export const updateSchedules = async (
   fetchSchedules: (method?: string) => Promise<void>
 ): Promise<void> => {
   const response = await fetch(
-    `${ARUPAKA_DB_MANAGER_URL}/line-bot/update-schedule`,
+    `${process.env.NEXT_PUBLIC_ARUPAKA_DB_MANAGER_URL}/line-bot/update-schedule`,
     {
       method: "POST",
       headers: {

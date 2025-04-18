@@ -2,7 +2,6 @@ import { DataTable } from "@/components/dashboard/data-table";
 import { columns } from "@/components/dashboard/classes/columns";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { LOCAL_DATABASE_URL } from "@/env";
 import { Lecture } from "@/components/interface/Lecture";
 
 export default async function ClassesPage() {

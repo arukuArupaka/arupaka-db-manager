@@ -6,7 +6,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ARUPAKA_DB_URL } from "@/env";
 
 export default function DataSubmissionPage() {
   const [title, setTitle] = useState("");
@@ -68,13 +67,16 @@ export default function DataSubmissionPage() {
       data: jsonData,
     };
     try {
-      const res = await fetch(`${ARUPAKA_DB_URL}/device_token/push_notification`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_ARUPAKA_DB_URL}/device_token/push_notification`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
       if (!res.ok) {
         alert("データの送信に失敗しました");
         throw new Error(`${res}`);
@@ -98,7 +100,9 @@ export default function DataSubmissionPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">データ送信</h1>
-        <p className="text-muted-foreground">データベースやエンドポイントにデータを送信します。</p>
+        <p className="text-muted-foreground">
+          データベースやエンドポイントにデータを送信します。
+        </p>
       </div>
 
       <div className="bg-white p-6 rounded-lg border shadow-sm">
@@ -138,12 +142,22 @@ export default function DataSubmissionPage() {
               value={jsonText}
               onChange={handleJsonChange}
               placeholder='{"key": "value", "example": [1, 2, 3]}'
-              className={`font-mono h-64 ${!isValidJson ? "border-red-500" : ""}`}
+              className={`font-mono h-64 ${
+                !isValidJson ? "border-red-500" : ""
+              }`}
             />
-            {!isValidJson && <p className="text-sm text-red-500">有効なJSON形式ではありません</p>}
+            {!isValidJson && (
+              <p className="text-sm text-red-500">
+                有効なJSON形式ではありません
+              </p>
+            )}
           </div>
 
-          <Button type="submit" disabled={isSubmitting || !isValidJson} onClick={handleSubmit}>
+          <Button
+            type="submit"
+            disabled={isSubmitting || !isValidJson}
+            onClick={handleSubmit}
+          >
             {isSubmitting ? "送信中..." : "データを送信"}
           </Button>
         </form>
