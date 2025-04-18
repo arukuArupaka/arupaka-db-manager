@@ -27,6 +27,7 @@ jobs:
       - name: Recreate all posts
         shell: bash
         run: |
+          cd admin-site
           npm install
           npm run build:posts
       - uses: amondnet/vercel-action@v20
