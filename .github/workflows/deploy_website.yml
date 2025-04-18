@@ -39,6 +39,7 @@ jobs:
         working-directory: ./admin-site
         run: |
           npm -v
+          npm install -g pnpm
           pnpm -v
           pnpm install --frozen-lockfile
           pnpm run build
