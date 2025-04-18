@@ -203,3 +203,27 @@ model DeviceToken {
   deviceToken String  @unique @map("device_token")
   firebaseUserId String? @map("firebase_user_id")
 }
+
+model Schedule {
+  id String @id @default(cuid())
+  scheduleId String @unique @map("schedule_id")
+  minute Int?
+  hour Int?
+  weekday Weekday?
+  message String @map("message")
+  description String? @map("description")
+  category String @map("category")
+  formId String? @map("form_id")
+  formGroupId String? @map("form_group_id")
+}
+
+model CircleMember {
+  id Int @id @default(autoincrement())
+  role String
+  name String
+  lineUserId String? @map("line_user_id")
+  studentNumber String? @map("student_number")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("circle_member")
+}
