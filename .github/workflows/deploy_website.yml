@@ -38,6 +38,7 @@ jobs:
       - name: Install dependencies & build
         working-directory: ./admin-site
         run: |
+          npm -v
           pnpm -v
           pnpm install --frozen-lockfile
           pnpm run build
