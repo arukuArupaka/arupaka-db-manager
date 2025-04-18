@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import React from "react";
+import { useEffectEvent as _useEffectEvent } from "use-effect-event";
+
+(React as any).useEffectEvent = _useEffectEvent;
 
 export const metadata: Metadata = {
   title: "admin site",
