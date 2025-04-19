@@ -18,20 +18,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2) Node.js をセットアップ＆pnpm キャッシュを有効化
+      # 2) pnpm CLI をセットアップ (これで pnpm が PATH に入る)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10 # admin-site で使っている pnpm のメジャーバージョン
+          run_install: false
+
+      # 3) Node.js をセットアップ＆pnpm キャッシュを有効化
       - name: Setup Node.js & pnpm cache
         uses: actions/setup-node@v3
         with:
           node-version: "18"
           cache: "pnpm"
-          cache-dependency-path: "admin-site/pnpm-lock.yaml" # ← サブフォルダ内の lockfile
-
-      # 3) pnpm CLI をセットアップ
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10 # admin-site で使っているメジャーバージョンを指定
-          run_install: false # 手動で install を実行するので false
+          cache-dependency-path: "admin-site/pnpm-lock.yaml"
 
       # 4) デバッグ用にリポジトリ構造を確認
       - name: Debug list repo
