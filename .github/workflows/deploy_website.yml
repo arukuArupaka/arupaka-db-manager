@@ -14,42 +14,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) リポジトリ全体を checkout
+      # 1) リポジトリを checkout
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2) pnpm CLI を先にセットアップ（v4 を使用）
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
-          run_install: false
-
-      # 3) Node.js 環境をセットアップ＆pnpm キャッシュを有効化
+      # 2) Node.js をセットアップ＆pnpm キャッシュを有効化
       - name: Setup Node.js & pnpm cache
         uses: actions/setup-node@v3
         with:
           node-version: "18"
           cache: "pnpm"
-          cache-dependency-path: "admin-site/pnpm-lock.yaml"
+          cache-dependency-path: "admin-site/pnpm-lock.yaml" # ← サブフォルダ内の lockfile
 
+      # 3) pnpm CLI をセットアップ
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10 # admin-site で使っているメジャーバージョンを指定
+          run_install: false # 手動で install を実行するので false
+
+      # 4) デバッグ用にリポジトリ構造を確認
       - name: Debug list repo
         run: |
           echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
           ls -R .
 
-      # 4) admin-site 配下で依存インストール＆ビルド
+      # 5) admin-site 配下で依存インストール＆ビルド
       - name: Install dependencies & build
         working-directory: ./admin-site
         run: |
-          ls
-          npm -v
-          npm install -g pnpm
           pnpm -v
           pnpm install
           pnpm run build
 
-      # 5) Vercel へデプロイ
+      # 6) Vercel へデプロイ
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20
         with:
