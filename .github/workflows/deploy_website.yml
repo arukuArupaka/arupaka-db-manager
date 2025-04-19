@@ -31,8 +31,12 @@ jobs:
         with:
           node-version: "18"
           cache: "pnpm"
-          # キャッシュキーの生成に使う pnpm-lock.yaml のパスをフルで指定
-          cache-dependency-path: "./admin-site/pnpm-lock.yaml"
+          cache-dependency-path: "admin-site/pnpm-lock.yaml"
+
+      - name: Debug list repo
+        run: |
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          ls -R .
 
       # 4) admin-site 配下で依存インストール＆ビルド
       - name: Install dependencies & build
