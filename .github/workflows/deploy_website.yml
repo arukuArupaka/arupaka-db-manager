@@ -38,6 +38,7 @@ jobs:
       - name: Install dependencies & build
         working-directory: ./admin-site
         run: |
+          ls
           npm -v
           npm install -g pnpm
           pnpm -v
