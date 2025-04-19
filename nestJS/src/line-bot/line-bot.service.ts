@@ -357,7 +357,7 @@ export class LineBotService {
     console.log(message.groupId);
 
     await client.pushMessage({
-      to: message.groupId, // console.log で actual groupId を確認しておく
+      to: 'Cdb1e61c3cbe7e55406b65a21aef791fd', // console.log で actual groupId を確認しておく
       messages: [
         {
           type: 'textV2',
@@ -383,6 +383,7 @@ export class LineBotService {
    * @returns
    */
   async lineSendMessageProcess(events: WebhookEvent[]): Promise<void> {
+    console.log('lineSendMessageProcess');
     const receivedMessage = await this.validateReceivedMessage(events);
 
     if (!receivedMessage) {
