@@ -7,6 +7,15 @@ on:
 jobs:
   build-and-deploy:
     runs-on: self-hosted # ★ セルフホストランナーで実行
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+      LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
+      LINE_GROUP_ID: ${{ secrets.LINE_GROUP_ID }}
+      FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
+      CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+      GOOGLE_FORM_ID: ${{ secrets.GOOGLE_FORM_ID }}
 
     steps:
       # 1) リポジトリを checkout
