@@ -54,5 +54,5 @@ jobs:
         run: |
           rsync -av --delete nestJS/dist/ /home/arupaka/arupaka-db-manager/nestJS/dist/
 
-      - name: Restart arupaka’s NestJS service
-        run: sudo /usr/bin/systemctl restart nest-api.service
+      - name: Restart NestJS (PM2)
+        run: sudo -u arupaka /home/arupaka/restart-nest.sh
