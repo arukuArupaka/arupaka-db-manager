@@ -163,8 +163,8 @@ export class GoogleFormService {
     answers.forEach((ans: any) => {
       const keys = Object.keys(ans.answers);
 
-      const nameValue = ans.answers[keys[1]];
-      const contentValue = ans.answers[keys[0]];
+      const nameValue = ans.answers[keys[0]];
+      const contentValue = ans.answers[keys[1]];
       console.log('contentValue', contentValue);
       console.log('nameValue', nameValue);
       if (
