@@ -52,7 +52,7 @@ jobs:
 
       - name: Copy dist/ to arupaka app directory
         run: |
-          rsync -av --delete dist/ /home/arupaka/arupaka-db-manager/nestJS/dist/
+          rsync -av --delete nestJS/dist/ /home/arupaka/arupaka-db-manager/nestJS/dist/
 
       - name: Restart arupaka’s NestJS service
         run: sudo -u arupaka /bin/systemctl restart nest-api.service
