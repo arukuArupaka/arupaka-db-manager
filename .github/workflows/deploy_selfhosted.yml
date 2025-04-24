@@ -50,7 +50,9 @@ jobs:
           pnpm run migrate
           pnpm run build
 
-      - name: Start service
-        working-directory: ./nestJS
+      - name: Copy dist/ to arupaka app directory
         run: |
-          pnpm run start
+          rsync -av --delete dist/ /home/arupaka/arupaka-db-manager/nestJS/dist/
+
+      - name: Restart arupaka’s NestJS service
+        run: sudo -u arupaka /bin/systemctl restart nest-api.service
