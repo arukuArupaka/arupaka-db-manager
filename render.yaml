@@ -1,4 +1,4 @@
-service:
+services:
   -type:
     runtime: node
     name: arupaka-db-manager-stg
