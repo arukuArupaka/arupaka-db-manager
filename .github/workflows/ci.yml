@@ -1,8 +1,8 @@
 name: Build & Deploy to Render (PR Comment Trigger)
 
 on:
-  issue_comment:
-    types: [created]
+  pull_request_target:
+    types: [commented]
 
 permissions:
   issues: write
@@ -10,7 +10,6 @@ permissions:
 jobs:
   deploy:
     if: |
-      github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '.stg-deploy')
     runs-on: ubuntu-latest
     env:
