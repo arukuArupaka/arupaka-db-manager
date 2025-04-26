@@ -25,12 +25,13 @@ jobs:
 
     steps:
       - name: React with 👀 when starting
+        if: github.event.issue.pull_request
         uses: actions/github-script@v7
         with:
           script: |
             github.rest.reactions.createForIssueComment({
               owner: context.repo.owner,
-              repo: context.repo.repo,
+              repo: context.repo.name,
               comment_id: context.payload.comment.id,
               content: 'eyes'
             })
@@ -67,6 +68,7 @@ jobs:
           curl "$RENDER_DEPLOY_HOOK_URL"
 
       - name: React with 🚀 after success
+        if: github.event.issue.pull_request
         uses: actions/github-script@v7
         with:
           script: |
