@@ -67,7 +67,8 @@ export class GoogleFormService {
             createItem: {
               location: { index: 0 },
               item: {
-                title: 'ご氏名を教えてください',
+                title:
+                  'ご氏名を教えてください（本名で苗字と名前の間はスペースを空けないでください）',
                 questionItem: {
                   question: {
                     required: true,
@@ -82,7 +83,8 @@ export class GoogleFormService {
             createItem: {
               location: { index: 1 },
               item: {
-                title: '参加可能日をお選びください',
+                title:
+                  '参加可能日をお選びください（どちらも参加可能な場合は両方選択してください。）',
                 questionItem: {
                   question: {
                     required: true,
@@ -92,6 +94,7 @@ export class GoogleFormService {
                       options: [
                         { value: '土曜日参加可能' },
                         { value: '日曜日参加可能' },
+                        { value: '参加不可' },
                       ],
                     },
                   },
