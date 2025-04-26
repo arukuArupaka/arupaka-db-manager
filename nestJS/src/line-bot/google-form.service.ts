@@ -158,7 +158,6 @@ export class GoogleFormService {
     const totalResponses = res.totalResponses;
     const answers = res.responses;
     const answer = {};
-    console.log('answers', answers);
 
     answers.forEach((ans: any) => {
       const keys = Object.keys(ans.answers);
