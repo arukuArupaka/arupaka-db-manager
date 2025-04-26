@@ -27,7 +27,7 @@ jobs:
           script: |
             github.rest.reactions.createForIssueComment({
               owner: context.repo.owner,
-              repo: context.repo.name,
+              repo: context.repo.repo,
               comment_id: context.payload.comment.id,
               content: 'eyes'
             })
