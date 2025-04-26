@@ -3,9 +3,9 @@ name: Create Develop to Main PR After Merge
 on:
   pull_request:
     types:
-      - closed # PRが閉じられたとき
+      - closed
     branches:
-      - develop # developブランチに対するマージのみ検知
+      - develop
 
 permissions:
   pull-requests: write
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   create-develop-to-main-pr:
-    if: github.event.pull_request.merged == true # マージされた場合のみ
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
