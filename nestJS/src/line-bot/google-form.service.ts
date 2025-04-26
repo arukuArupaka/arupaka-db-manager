@@ -165,8 +165,6 @@ export class GoogleFormService {
 
       const nameValue = ans.answers[keys[0]];
       const contentValue = ans.answers[keys[1]];
-      console.log('contentValue', contentValue);
-      console.log('nameValue', nameValue);
       if (
         nameValue !== null &&
         nameValue !== undefined &&
@@ -174,11 +172,9 @@ export class GoogleFormService {
         contentValue !== undefined
       ) {
         const name = nameValue.textAnswers?.answers[0]?.value;
-        console.log('name', name);
         const content = contentValue.textAnswers?.answers.map(
           (item: any) => item.value,
         );
-        console.log('content', content);
         answer[name] = content;
       }
     });
