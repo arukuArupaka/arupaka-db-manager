@@ -37,8 +37,10 @@ jobs:
               content: 'eyes'
             })
 
-      - name: Checkout code
+      - name: Checkout PR branch
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.issue.pull_request.head.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
