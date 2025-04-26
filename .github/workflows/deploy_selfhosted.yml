@@ -1,0 +1,58 @@
+name: Build & Deploy (Self-Hosted)
+
+on:
+  push:
+    branches: [main] # ← 任意のブランチに調整
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted # ★ セルフホストランナーで実行
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+      LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
+      LINE_GROUP_ID: ${{ secrets.LINE_GROUP_ID }}
+      FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
+      CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+      GOOGLE_FORM_ID: ${{ secrets.GOOGLE_FORM_ID }}
+
+    steps:
+      # 1) リポジトリを checkout
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2) pnpm CLI をセットアップ (これで pnpm が PATH に入る)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10 # admin-site で使っている pnpm のメジャーバージョン
+          run_install: false
+
+      # 3) Node.js をセットアップ＆pnpm キャッシュを有効化
+      - name: Setup Node.js & pnpm cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "pnpm"
+          cache-dependency-path: "nestJS/pnpm-lock.yaml"
+
+      - name: Debug list repo
+        run: |
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          ls -R .
+
+      - name: Build NestJS
+        working-directory: ./nestJS
+        run: |
+          pnpm install
+          pnpm run generate
+          pnpm run migrate
+          pnpm run build
+
+      - name: Copy dist/ to arupaka app directory
+        run: |
+          rsync -av --delete nestJS/dist/ /home/arupaka/arupaka-db-manager/nestJS/dist/
+
+      - name: Restart NestJS (PM2)
+        run: sudo -u arupaka /home/arupaka/restart-nest.sh
