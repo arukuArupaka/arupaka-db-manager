@@ -357,7 +357,7 @@ export class LineBotService {
     console.log(message.groupId);
 
     await client.pushMessage({
-      to: 'Cdb1e61c3cbe7e55406b65a21aef791fd', // console.log で actual groupId を確認しておく
+      to: message.groupId, // console.log で actual groupId を確認しておく
       messages: [
         {
           type: 'textV2',
