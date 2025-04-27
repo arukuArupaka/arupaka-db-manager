@@ -245,8 +245,6 @@ export class GoogleFormService {
       }
     });
 
-    console.log('totalResponses', formatAttendanceFormResponse);
-
     console.log('contents', contents);
 
     console.log('member', memberList);
