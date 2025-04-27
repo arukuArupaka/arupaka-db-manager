@@ -31,11 +31,15 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: "open",
-              base: "main",
-              head: `${context.repo.owner}:develop`,  // ←ここ！！！必ずこう書く！！
             });
 
-            if (prs.data.length > 0) {
+            const exists = prs.data.some(pr => 
+              pr.base.ref === "main" && 
+              pr.head.ref === "develop" && 
+              pr.state === "open"
+            );
+
+            if (exists) {
               core.setOutput("pr_exists", "true");
             } else {
               core.setOutput("pr_exists", "false");
