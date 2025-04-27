@@ -233,4 +233,5 @@ model Carousel {
   imageUrl String @map("image_url")
   title String?
   description String?
+  publicId String @unique @map("public_id")
 }
