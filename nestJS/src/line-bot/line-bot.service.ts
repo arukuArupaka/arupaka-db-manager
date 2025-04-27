@@ -411,7 +411,7 @@ export class LineBotService {
   }
 
   /**
-   * スケジュールを全て取得する
+   * スケジュールを全て取得する。
    * @returns
    */
   async getAllSchedule(): Promise<Schedule[]> {
