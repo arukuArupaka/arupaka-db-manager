@@ -32,7 +32,7 @@ jobs:
               repo: context.repo.repo,
               state: "open",
               base: "main",
-              head: "develop",
+              head: `${context.repo.owner}:develop`,  // ←ここ！！！必ずこう書く！！
             });
 
             if (prs.data.length > 0) {
