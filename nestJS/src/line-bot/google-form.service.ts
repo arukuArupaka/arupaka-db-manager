@@ -249,6 +249,8 @@ export class GoogleFormService {
 
     console.log('member', memberList);
 
+    console.log('test');
+
     const sat = contents.filter(
       (item: string) => item === '土曜日参加可能' || item === 'どちらでも可',
     ).length;
