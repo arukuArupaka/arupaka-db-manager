@@ -48,9 +48,15 @@ export class CarouselController {
   async addCarousel(
     @Body('title') title: string,
     @Body('description') description: string,
+    @Body('carouselUrl') carouselUrl: string,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<string> {
-    return await this.carouselService.addCarousel(title, description, file);
+    return await this.carouselService.addCarousel(
+      title,
+      description,
+      file,
+      carouselUrl,
+    );
   }
 
   @Delete('delete')

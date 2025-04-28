@@ -20,6 +20,7 @@ export class CarouselService {
     title: string,
     description: string,
     file: Express.Multer.File,
+    carouselUrl: string,
   ): Promise<any> {
     try {
       const imagePath = file.path;
@@ -48,6 +49,7 @@ export class CarouselService {
           description,
           imageUrl,
           publicId,
+          carouselUrl,
         },
       });
     } catch (error) {
