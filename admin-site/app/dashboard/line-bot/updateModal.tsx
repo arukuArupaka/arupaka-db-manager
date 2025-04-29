@@ -5,40 +5,62 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createSchedules } from "@/functions/line-bot/createSchedules";
 import { set, useForm, useWatch } from "react-hook-form";
+import { ScreenScheduleData } from "@/components/dashboard/line-bot/columns";
+import { updateSchedules } from "@/functions/line-bot/updateSchedules";
 
 interface FormValues {
-  date: string;
-  weekday: number;
+  weekday: number | null;
   hour: number;
   minute: number;
   description: string;
   message: string;
-  category: string;
-  resultSendWeekday: number;
-  resultSendHour: number;
-  resultSendMinute: number;
 }
 
-export default function CreateModal({
-  from,
+export default function UpdateModal({
   isOpenModal,
   setIsOpenModal,
   fetchSchedules,
+  info,
 }: {
   from?: string;
   isOpenModal: boolean;
   setIsOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
   fetchSchedules: (method?: string) => Promise<void>;
+  info: ScreenScheduleData | null;
 }) {
+  const dayMap: Record<string, number> = {
+    Monday: 0,
+    Tuesday: 1,
+    Wednesday: 2,
+    Thursday: 3,
+    Friday: 4,
+    Saturday: 5,
+    Sunday: 6,
+  };
+
+  function convertWeekdayToNumber(
+    weekday: string | null | undefined
+  ): number | null {
+    return !!weekday ? dayMap[weekday] : null;
+  }
+
   // フォーム入力状態
 
-  const { register, handleSubmit, control } = useForm<FormValues>();
+  const { register, handleSubmit, control, reset } = useForm<FormValues>();
 
-  const category = useWatch({
-    control,
-    name: "category",
-    defaultValue: "",
-  });
+  // infoが来たら初期化する
+  useEffect(() => {
+    if (info) {
+      console.log("info", info, convertWeekdayToNumber(info.weekday));
+      reset({
+        weekday: convertWeekdayToNumber(info.weekday),
+        hour: info.hour,
+        minute: info.minute,
+        description: info.description,
+        message: info.message,
+      });
+    }
+  }, [info, reset]);
 
   // モーダル内部の参照
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -72,17 +94,14 @@ export default function CreateModal({
   const onSubmit = async (data: FormValues) => {
     try {
       // 入力値でAPI呼び出し
-      await createSchedules(
+      await updateSchedules(
+        info?.scheduleId as string,
         Number(data.weekday),
         Number(data.hour),
         Number(data.minute),
         data.description,
         data.message,
-        category,
-        fetchSchedules,
-        Number(data.resultSendWeekday),
-        Number(data.resultSendHour),
-        Number(data.resultSendMinute)
+        fetchSchedules
       );
       // フォーム送信後、モーダルを閉じる
       setIsOpenModal(false);
@@ -100,7 +119,7 @@ export default function CreateModal({
         ref={modalRef}
         className="relative z-20 bg-slate-100 rounded-xl shadow-lg p-6 w-[90vw] max-w-md overflow-auto"
       >
-        <h2 className="text-2xl font-bold mb-4">スケジュール作成</h2>
+        <h2 className="text-2xl font-bold mb-4">スケジュールの編集</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
           {/* 曜日の選択 */}
           <div className="mb-4">
@@ -179,78 +198,6 @@ export default function CreateModal({
               required
             />
           </div>
-
-          <div className="mb-4">
-            <label htmlFor="weekday" className="block mb-1">
-              カテゴリ
-            </label>
-            <select
-              id="weekday"
-              {...register("category", { required: true })}
-              className="w-full border border-gray-300 rounded p-2"
-            >
-              <option value="">選択してください</option>
-              <option value="MESSAGE">メッセージのみ</option>
-              <option value="FORM">アンケート作成</option>
-            </select>
-          </div>
-          {category === "FORM" && (
-            <div className="mb-4">
-              <label htmlFor="form" className="mb-4">
-                結果送信日時
-              </label>
-              <div className="flex flex-row items-center gap-4">
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-1">
-                    <select
-                      id="weekday"
-                      {...register("resultSendWeekday", { required: false })}
-                      className="w-[100px] border border-gray-300 rounded p-2"
-                    >
-                      <option value="">日</option>
-                      <option value="0">0</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                      <option value="6">6</option>
-                    </select>
-                    <span className="text-sm text-gray-500">日後の</span>
-                  </div>
-                </div>
-
-                {/* 時間入力 */}
-                <div className="flex flex-col">
-                  <input
-                    id="hour"
-                    type="number"
-                    min={0}
-                    max={23}
-                    placeholder="時間"
-                    {...register("resultSendHour", { required: false })}
-                    className="w-16 border rounded p-2"
-                  />
-                </div>
-                <span className="text-sm text-gray-500">時</span>
-
-                {/* 分入力 */}
-                <div className="flex flex-col">
-                  <input
-                    id="minute"
-                    type="number"
-                    min={0}
-                    max={59}
-                    placeholder="分"
-                    {...register("resultSendMinute", { required: false })}
-                    className="w-16 border rounded p-2"
-                  />
-                </div>
-                <span className="text-sm text-gray-500">分</span>
-              </div>
-            </div>
-          )}
-
           {/* ボタン群 */}
           <div className="flex justify-end space-x-2">
             <Button
@@ -260,7 +207,7 @@ export default function CreateModal({
             >
               キャンセル
             </Button>
-            <Button type="submit">作成</Button>
+            <Button type="submit">編集</Button>
           </div>
         </form>
       </div>
