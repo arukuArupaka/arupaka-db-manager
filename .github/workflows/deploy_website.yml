@@ -1,10 +1,10 @@
 name: deploy website
 
-# main ブランチの admin-site 配下変更時／手動実行でトリガー
 on:
   push:
     branches:
       - main
+      - develop
     paths:
       - "admin-site/**"
   workflow_dispatch:
@@ -14,18 +14,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) リポジトリを checkout
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2) pnpm CLI をセットアップ (これで pnpm が PATH に入る)
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10 # admin-site で使っている pnpm のメジャーバージョン
+          version: 10
           run_install: false
 
-      # 3) Node.js をセットアップ＆pnpm キャッシュを有効化
       - name: Setup Node.js & pnpm cache
         uses: actions/setup-node@v3
         with:
@@ -33,26 +30,17 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: "admin-site/pnpm-lock.yaml"
 
-      # 4) デバッグ用にリポジトリ構造を確認
-      - name: Debug list repo
-        run: |
-          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
-          ls -R .
-
-      # 5) admin-site 配下で依存インストール＆ビルド
       - name: Install dependencies & build
         working-directory: ./admin-site
         run: |
-          pnpm -v
           pnpm install
           pnpm run build
 
-      # 6) Vercel へデプロイ
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-args: "--prod"
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
+          vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
           working-directory: ./admin-site
