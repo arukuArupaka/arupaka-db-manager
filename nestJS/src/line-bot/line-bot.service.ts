@@ -129,7 +129,20 @@ export class LineBotService {
       await this.googleFormService.collectAttendanceFormResponses(
         formResultInfo[0].formId!,
       );
-    const resultMessage = `回答結果を発表します。\n土曜日：${formResult.responses.sat}\n日曜日：${formResult.responses.sun}\nよって、${formResult.win}`;
+    const resultMessage = `回答結果を発表します。\n土曜日：${formResult.responses.sat}\n日曜日：${formResult.responses.sun}\n日曜日参加可能な人:\n${formResult.member[
+      'sun'
+    ].map((el) => {
+      return `* ${el}\n`;
+    })}\n
+    土曜参加可能な人:\n
+    ${formResult.member['sat'].map((el) => {
+      return `* ${el}\n`;
+    })}\n
+    参加不可能な人:\n
+    ${formResult.member['no'].map((el) => {
+      return `* ${el}\n`;
+    })}\n
+    よって、${formResult.win}`;
     return await this.sendMessage({
       groupId: input.groupId,
       textEventMessage: resultMessage,
@@ -357,7 +370,7 @@ export class LineBotService {
     console.log(message.groupId);
 
     await client.pushMessage({
-      to: 'Cdb1e61c3cbe7e55406b65a21aef791fd', // console.log で actual groupId を確認しておく
+      to: message.groupId, // console.log で actual groupId を確認しておく
       messages: [
         {
           type: 'textV2',
