@@ -68,10 +68,8 @@ export default function CreateModal({
     }
   }, [isOpenModal]);
 
-  // フォーム送信時の処理
   const onSubmit = async (data: FormValues) => {
     try {
-      // 入力値でAPI呼び出し
       await createSchedules(
         Number(data.weekday),
         Number(data.hour),
@@ -84,7 +82,6 @@ export default function CreateModal({
         Number(data.resultSendHour),
         Number(data.resultSendMinute)
       );
-      // フォーム送信後、モーダルを閉じる
       setIsOpenModal(false);
     } catch (error) {
       console.error(error);
@@ -93,7 +90,6 @@ export default function CreateModal({
 
   if (!isOpenModal) return null;
 
-  // 画面全体に固定するため fixed を利用
   return (
     <div className="fixed z-10 top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center">
       <div
@@ -102,7 +98,6 @@ export default function CreateModal({
       >
         <h2 className="text-2xl font-bold mb-4">スケジュール作成</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* 曜日の選択 */}
           <div className="mb-4">
             <label htmlFor="weekday" className="block mb-1">
               曜日
