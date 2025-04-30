@@ -51,7 +51,7 @@ export default async function RoomsPage() {
     ];
 
     return (
-      <div className="space-y-6">
+      <div className="relative h-full w-full p-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Room List</h1>
           <p className="text-muted-foreground">

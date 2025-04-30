@@ -97,7 +97,7 @@ export default function DataSubmissionPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="relative h-full w-full p-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">データ送信</h1>
         <p className="text-muted-foreground">

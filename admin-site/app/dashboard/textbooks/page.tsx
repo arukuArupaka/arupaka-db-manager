@@ -28,7 +28,7 @@ export default async function TextbooksPage() {
     const textBooks = await res.json();
 
     return (
-      <div className="space-y-6">
+      <div className="relative h-full w-full p-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Textbook Market</h1>
           <p className="text-muted-foreground">
