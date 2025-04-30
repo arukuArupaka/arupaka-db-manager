@@ -54,7 +54,7 @@ jobs:
           script: |
             const prList = await github.rest.pulls.list({
               owner: context.repo.owner,
-              repo: context.repo.name,
+              repo: context.repo.repo,
               head: `${context.repo.owner}:develop`,
               state: 'closed'
             });
@@ -63,7 +63,7 @@ jobs:
             if (mergedPR) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
-                repo: context.repo.name,
+                repo: context.repo.repo,
                 issue_number: mergedPR.number,
                 body: `🚀 Vercel Preview 環境: ${{ steps.vercel.outputs.preview-url }}`
               });
