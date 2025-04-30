@@ -106,7 +106,7 @@ export class LineBotService {
     const formInfo = await this.googleFormService.createSampleForm();
     const message = `${input.message}\n${formInfo.publicUrl}`;
     const formId = formInfo.editId;
-    console.log(formId);
+    console.log('formId', formId);
     await this.prisma.schedule.updateMany({
       where: { formGroupId: input.formGroupId },
       data: { formId: formId },
@@ -155,7 +155,7 @@ export class LineBotService {
    */
   async receiveCreateRequest(input: ReceivedCreateRequestInput) {
     const groupId = this.env.GroupId;
-    console.log(groupId);
+    console.log('groupId', groupId);
     if (input.category === 'MESSAGE') {
       await this.createSchedule({
         ...input,
@@ -367,7 +367,7 @@ export class LineBotService {
       return;
     }
 
-    console.log(message.groupId);
+    console.log('groupId', message.groupId);
 
     await client.pushMessage({
       to: message.groupId, // console.log で actual groupId を確認しておく
