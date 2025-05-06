@@ -5,6 +5,7 @@ CREATE TABLE "Carousel" (
     "title" TEXT,
     "description" TEXT,
     "public_id" TEXT NOT NULL,
+    "carousel_url" TEXT,
 
     CONSTRAINT "Carousel_pkey" PRIMARY KEY ("id")
 );
