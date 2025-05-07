@@ -58,7 +58,7 @@ export class LineBotController {
   @Get('get-form-result')
   async getFormResult() {
     return await this.googleFormService.collectAttendanceFormResponses(
-      '1AjSXodnMhPfsbgl4x9BTLfIDjT18ndm7vx_RXWwA1RE',
+      '1mJB0sDoWhjKb8AVbcUWtrdJjRoNF9rysylJshBGMPaw',
     );
   }
 }
