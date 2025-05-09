@@ -129,7 +129,7 @@ export class LineBotService {
       await this.googleFormService.collectAttendanceFormResponses(
         formResultInfo[0].formId!,
       );
-    console.log('formResult sunday', formResult.member['sun']);
+    console.log('formResult sunday', formResult.member.get('sun'));
     const resultMessage = [
       '回答結果を発表します。',
       `土曜日：${formResult.responses.sat}`,
