@@ -136,13 +136,22 @@ export class LineBotService {
       `日曜日：${formResult.responses.sun}`,
       '',
       '■ 日曜日参加可能な人',
-      formResult.member['sun'].map((el) => `・${el}`).join('\n') || '（なし）',
+      formResult.member
+        .get('sun')
+        .map((el) => `・${el}`)
+        .join('\n') || '（なし）',
       '',
       '■ 土曜参加可能な人',
-      formResult.member['sat'].map((el) => `・${el}`).join('\n') || '（なし）',
+      formResult.member
+        .get('sat')
+        .map((el) => `・${el}`)
+        .join('\n') || '（なし）',
       '',
       '■ 参加不可能な人',
-      formResult.member['no'].map((el) => `・${el}`).join('\n') || '（なし）',
+      formResult.member
+        .get('no')
+        .map((el) => `・${el}`)
+        .join('\n') || '（なし）',
       '',
       `よって、${formResult.win}`,
     ].join('\n');
