@@ -67,7 +67,8 @@ export class GoogleFormService {
             createItem: {
               location: { index: 0 },
               item: {
-                title: 'ご氏名を教えてください',
+                title:
+                  'ご氏名を教えてください（本名で苗字と名前の間はスペースを空けないでください）',
                 questionItem: {
                   question: {
                     required: true,
@@ -82,7 +83,8 @@ export class GoogleFormService {
             createItem: {
               location: { index: 1 },
               item: {
-                title: '参加可能日をお選びください',
+                title:
+                  '参加可能日をお選びください（どちらも参加可能な場合は両方選択してください。）',
                 questionItem: {
                   question: {
                     required: true,
@@ -92,6 +94,8 @@ export class GoogleFormService {
                       options: [
                         { value: '土曜日参加可能' },
                         { value: '日曜日参加可能' },
+                        { value: 'どちらでも可' },
+                        { value: '参加不可' },
                       ],
                     },
                   },
@@ -158,15 +162,13 @@ export class GoogleFormService {
     const totalResponses = res.totalResponses;
     const answers = res.responses;
     const answer = {};
-    console.log('answers', answers);
+    // テスト
 
     answers.forEach((ans: any) => {
       const keys = Object.keys(ans.answers);
 
-      const nameValue = ans.answers[keys[1]];
-      const contentValue = ans.answers[keys[0]];
-      console.log('contentValue', contentValue);
-      console.log('nameValue', nameValue);
+      const nameValue = ans.answers[keys[0]];
+      const contentValue = ans.answers[keys[1]];
       if (
         nameValue !== null &&
         nameValue !== undefined &&
@@ -174,11 +176,9 @@ export class GoogleFormService {
         contentValue !== undefined
       ) {
         const name = nameValue.textAnswers?.answers[0]?.value;
-        console.log('name', name);
         const content = contentValue.textAnswers?.answers.map(
           (item: any) => item.value,
         );
-        console.log('content', content);
         answer[name] = content;
       }
     });
@@ -197,26 +197,70 @@ export class GoogleFormService {
     const formResponse = await this.aggregateFormResponses(formId);
     const formatAttendanceFormResponse =
       this.formatAttendanceFormResponse(formResponse);
+
     const totalResponses = formatAttendanceFormResponse.totalResponses;
+
     const contents = Object.values(
       formatAttendanceFormResponse.responses,
     ).flatMap((item: any) => item);
 
-    console.log('totalResponses', formatAttendanceFormResponse);
+    const memberList = new Map([
+      ['sun', []],
+      ['sat', []],
+      ['no', []],
+    ]);
+
+    console.log('memberList', memberList);
+
+    Object.keys(formatAttendanceFormResponse.responses).forEach((el) => {
+      if (
+        formatAttendanceFormResponse.responses[el]?.includes(
+          '土曜日参加可能',
+        ) ||
+        formatAttendanceFormResponse.responses[el]?.includes('どちらでも可')
+      ) {
+        console.log('sat', el);
+        const satList = memberList.get('sat') || [];
+        satList.push(el);
+        memberList.set('sat', satList);
+      }
+
+      if (
+        formatAttendanceFormResponse.responses[el]?.includes(
+          '日曜日参加可能',
+        ) ||
+        formatAttendanceFormResponse.responses[el]?.includes('どちらでも可')
+      ) {
+        console.log('sun', el);
+        const sunList = memberList.get('sun') || [];
+        sunList.push(el);
+        memberList.set('sun', sunList);
+      }
+
+      if (formatAttendanceFormResponse.responses[el]?.includes('参加不可')) {
+        console.log('no', el);
+        const noList = memberList.get('no') || [];
+        noList.push(el);
+        memberList.set('no', noList);
+      }
+    });
 
     console.log('contents', contents);
 
+    console.log('member', memberList);
+
     const sat = contents.filter(
-      (item: string) => item === '土曜日参加可能',
+      (item: string) => item === '土曜日参加可能' || item === 'どちらでも可',
     ).length;
     const sun = contents.filter(
-      (item: string) => item === '日曜日参加可能',
+      (item: string) => item === '日曜日参加可能' || item === 'どちらでも可',
     ).length;
 
     if (sat > sun) {
       return {
         totalResponses: totalResponses,
         responses: { sat, sun },
+        member: memberList,
         win: '土曜日に決まりました',
       };
     }
@@ -224,12 +268,14 @@ export class GoogleFormService {
       return {
         totalResponses: totalResponses,
         responses: { sat, sun },
+        member: memberList,
         win: '日曜日に決まりました',
       };
     }
     return {
       totalResponses: totalResponses,
       responses: { sat, sun },
+      member: memberList,
       win: '同数でした',
     };
   }

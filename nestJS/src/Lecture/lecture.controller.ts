@@ -62,4 +62,9 @@ export class LectureController {
   async deleteLectures(): Promise<number> {
     return this.lectureService.deleteLectures();
   }
+
+  @Get('test')
+  test() {
+    return 'test success';
+  }
 }

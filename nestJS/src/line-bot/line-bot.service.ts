@@ -106,7 +106,7 @@ export class LineBotService {
     const formInfo = await this.googleFormService.createSampleForm();
     const message = `${input.message}\n${formInfo.publicUrl}`;
     const formId = formInfo.editId;
-    console.log(formId);
+    console.log('formId', formId);
     await this.prisma.schedule.updateMany({
       where: { formGroupId: input.formGroupId },
       data: { formId: formId },
@@ -129,7 +129,22 @@ export class LineBotService {
       await this.googleFormService.collectAttendanceFormResponses(
         formResultInfo[0].formId!,
       );
-    const resultMessage = `回答結果を発表します。\n土曜日：${formResult.responses.sat}\n日曜日：${formResult.responses.sun}\nよって、${formResult.win}`;
+    const resultMessage = [
+      '回答結果を発表します。',
+      `土曜日：${formResult.responses.sat}`,
+      `日曜日：${formResult.responses.sun}`,
+      '',
+      '■ 日曜日参加可能な人',
+      formResult.member['sun'].map((el) => `・${el}`).join('\n') || '（なし）',
+      '',
+      '■ 土曜参加可能な人',
+      formResult.member['sat'].map((el) => `・${el}`).join('\n') || '（なし）',
+      '',
+      '■ 参加不可能な人',
+      formResult.member['no'].map((el) => `・${el}`).join('\n') || '（なし）',
+      '',
+      `よって、${formResult.win}`,
+    ].join('\n');
     return await this.sendMessage({
       groupId: input.groupId,
       textEventMessage: resultMessage,
@@ -142,7 +157,7 @@ export class LineBotService {
    */
   async receiveCreateRequest(input: ReceivedCreateRequestInput) {
     const groupId = this.env.GroupId;
-    console.log(groupId);
+    console.log('groupId', groupId);
     if (input.category === 'MESSAGE') {
       await this.createSchedule({
         ...input,
@@ -354,10 +369,10 @@ export class LineBotService {
       return;
     }
 
-    console.log(message.groupId);
+    console.log('groupId', message.groupId);
 
     await client.pushMessage({
-      to: 'Cdb1e61c3cbe7e55406b65a21aef791fd', // console.log で actual groupId を確認しておく
+      to: message.groupId, // console.log で actual groupId を確認しておく
       messages: [
         {
           type: 'textV2',

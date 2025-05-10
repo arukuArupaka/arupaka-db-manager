@@ -1,0 +1,10 @@
+services:
+  - type: web
+    runtime: node
+    name: arupaka-db-manager-stg
+    plan: free
+    previews:
+      generation: manual
+    buildCommand: cd nestJS && npm install -g pnpm@10.4.1 && pnpm install && pnpm run generate && pnpm run migrate && pnpm run build
+    startCommand: pnpm run start
+    region: singapore
