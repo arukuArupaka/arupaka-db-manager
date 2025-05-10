@@ -15,5 +15,6 @@ class Lecture(models.Model):
     campus = models.CharField(max_length=400, null=True)
     credits = models.IntegerField()
     semester = models.BooleanField(default=False)
+    category = models.CharField(max_length=400, null=True)
     def __str__(self):
         return f'{self.name} - {self.classroom} - {self.teacher} - {self.syllabus} - {self.weekday} - {self.academic} - {self.semester} '
