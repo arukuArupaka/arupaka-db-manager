@@ -9,6 +9,9 @@ import { DeviceTokenModule } from './device-token/device-token.module';
 import { AuthModule } from './common/guards/auth.module';
 import { LineBotModule } from './line-bot/line-bot.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CarouselService } from './carousel/carousel.service';
+import { CarouselController } from './carousel/carousel.controller';
+import { CarouselModule } from './carousel/carousel.module';
 
 @Module({
   imports: [
@@ -22,8 +25,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     AuthModule,
     LineBotModule,
     ScheduleModule.forRoot(),
+    CarouselModule,
   ],
-  providers: [AppService, PrismaServiceProvider],
+  providers: [AppService, PrismaServiceProvider, CarouselService],
   exports: [PrismaServiceProvider],
+  controllers: [CarouselController],
 })
 export class AppModule {}
