@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CustomPrismaService } from 'src/prisma/prisma.service';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import * as path from 'path';
@@ -37,7 +41,7 @@ export class CarouselService {
         !uploadResult.secure_url ||
         !uploadResult.public_id
       ) {
-        throw new Error('Failed to upload image to Cloudinary');
+        throw new BadRequestException();
       }
 
       const imageUrl = uploadResult.secure_url;
@@ -57,7 +61,7 @@ export class CarouselService {
         'Error uploading to Cloudinary or saving to database:',
         error,
       );
-      throw new Error('Failed to add carousel item');
+      throw new BadRequestException(error);
     }
   }
 
@@ -70,9 +74,7 @@ export class CarouselService {
       });
 
       if (!carouselItem) {
-        throw new Error(
-          `Carousel item with id ${deleteDeviceToken.id} not found`,
-        );
+        throw new NotFoundException();
       }
 
       const publicId = carouselItem.publicId;
@@ -80,9 +82,7 @@ export class CarouselService {
       const cloudinaryResult = await cloudinary.uploader.destroy(publicId);
 
       if (cloudinaryResult.result !== 'ok') {
-        throw new Error(
-          `Failed to delete file from Cloudinary: ${cloudinaryResult.result}`,
-        );
+        throw new BadRequestException();
       }
 
       console.log(
