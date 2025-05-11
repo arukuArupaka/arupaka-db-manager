@@ -227,3 +227,17 @@ model CircleMember {
 
   @@map("circle_member")
 }
+
+model CalenderSchedule {
+  id Int @id @default(autoincrement())
+  scheduleId String @unique @map("schedule_id")
+  minute Int?
+  hour Int?
+  month Int
+  day Int
+  weekday Weekday?
+  title String        //カレンダー上の行事の名前
+  description String? //カレンダー上の行事の詳細
+  message String?     //プッシュ通知を送る際のメッセージ
+  tag String?    //カレンダー上の行事のタグ.(ex. サークル, 大学情報)
+}
