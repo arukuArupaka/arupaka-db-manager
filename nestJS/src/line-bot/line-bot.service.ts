@@ -451,4 +451,16 @@ export class LineBotService {
 
     return jobs;
   }
+
+  async getLatestFormResult() {
+    const formInfo = await this.prisma.schedule.findFirst({
+      where: { formId: { not: null } },
+    });
+    const formResult =
+      await this.googleFormService.collectAttendanceFormResponses(
+        formInfo!.formId!,
+      );
+
+    return formResult;
+  }
 }
