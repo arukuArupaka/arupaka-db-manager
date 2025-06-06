@@ -167,8 +167,8 @@ export class GoogleFormService {
     answers.forEach((ans: any) => {
       const keys = Object.keys(ans.answers);
 
-      const nameValue = ans.answers[keys[0]];
-      const contentValue = ans.answers[keys[1]];
+      const contentValue = ans.answers[keys[0]];
+      const nameValue = ans.answers[keys[1]];
       if (
         nameValue !== null &&
         nameValue !== undefined &&
@@ -197,6 +197,21 @@ export class GoogleFormService {
     const formResponse = await this.aggregateFormResponses(formId);
     const formatAttendanceFormResponse =
       this.formatAttendanceFormResponse(formResponse);
+
+    formResponse.responses.forEach((item: any) => {
+      const questionIds = Object.keys(item.answers);
+
+      questionIds.forEach((questionId) => {
+        console.log('answers', item.answers[questionId].textAnswers.answers);
+        console.log(
+          item.answers[questionId].textAnswers.answers[0].value,
+          ': ',
+          item.answers[questionId].textAnswers.answers.map(
+            (item: any) => item.value,
+          ),
+        );
+      });
+    });
 
     const totalResponses = formatAttendanceFormResponse.totalResponses;
 
