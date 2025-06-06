@@ -382,19 +382,11 @@ export class LineBotService {
     console.log('groupId', message.groupId);
 
     await client.pushMessage({
-      to: message.groupId, // console.log で actual groupId を確認しておく
+      to: message.groupId, // 実際の groupId を確認しておく
       messages: [
         {
-          type: 'textV2',
-          text: '{everyone}\n' + message.textEventMessage,
-          substitution: {
-            everyone: {
-              type: 'mention',
-              mentionee: {
-                type: 'all', // 全員メンション
-              },
-            },
-          },
+          type: 'text', // ← textV2 ではなく text に変更
+          text: message.textEventMessage, // ← 全員メンションではなく純粋な本文のみ
         },
       ],
     });
